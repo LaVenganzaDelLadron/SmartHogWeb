@@ -9,7 +9,7 @@
         </div>
         <nav class="flex items-center gap-3 text-sm">
             @auth
-                <a href="{{ url('/dashboard') }}" class="px-4 py-2 rounded-md border border-[#2f5f3f] text-[#2f5f3f] hover:bg-[#2f5f3f] hover:text-white transition-all">Dashboard</a>
+               <a href="{{ route('show.dashobard') }}" class="px-4 py-2 rounded-md border border-[#2f5f3f] text-[#2f5f3f] transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-600 hover:to-blue-600 hover:text-white hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-900/20 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2"> Dashboard </a>
             @else
                 <a href="#features" class="px-4 py-2 rounded-md border border-transparent text-[#2f2a24] hover:border-[#d6cdbf] transition-all">Explore</a>
                 <a href="{{ route('show.login') }}" class="px-4 py-2 rounded-md border border-[#2f5f3f] text-[#2f5f3f] hover:bg-[#2f5f3f] hover:text-white transition-all">Login</a>
