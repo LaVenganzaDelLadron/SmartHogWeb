@@ -16,11 +16,10 @@ class AuthMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(Auth::check()){
-            Auth::logout();
+        if (! Auth::check()) {
             return redirect()
-            ->route('show.login')
-            ->with('error','Please login first');
+                ->route('show.login')
+                ->with('error', 'Please login first');
         }
 
         return $next($request);
