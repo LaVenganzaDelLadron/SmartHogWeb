@@ -3,7 +3,7 @@ import {
     signInWithEmailAndPassword,
     updateProfile,
 } from 'firebase/auth';
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
 function setFormError(elementId, message) {
@@ -244,6 +244,7 @@ function bindLoginForm() {
         }
     });
 }
+
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {

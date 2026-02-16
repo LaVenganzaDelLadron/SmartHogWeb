@@ -3,6 +3,7 @@
     $statusDot = $deviceOnline ? 'bg-emerald-500' : 'bg-rose-500';
     $statusText = $deviceOnline ? 'Online' : 'Offline';
     $statusTone = $deviceOnline ? 'text-emerald-700' : 'text-rose-700';
+    $profileName = trim((string) (auth()->user()->name ?? 'Profile'));
 
     $mainMenu = [
         [
@@ -140,12 +141,12 @@
                 </section>
             </nav>
 
-            <div class="mt-4 space-y-2 border-t border-emerald-100 pt-4">
+            <div id="profile" class="mt-4 space-y-2 border-t border-emerald-100 pt-4">
                 <a href="{{ Route::has('profile.show') ? route('profile.show') : '#' }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-emerald-50">
                     <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="{{ $iconPaths['profile'] }}" />
                     </svg>
-                    <span>Profile</span>
+                    <span data-profile-name="{{ $profileName }}">{{ $profileName }}</span>
                 </a>
 
                 <form method="POST" class="js-firebase-logout" action="{{ Route::has('logout') ? route('logout') : '#' }}">
@@ -239,7 +240,7 @@
                     <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="{{ $iconPaths['profile'] }}" />
                     </svg>
-                    <span class="text-label">Profile</span>
+                    <span class="text-label" data-profile-name="{{ $profileName }}">{{ $profileName }}</span>
                 </a>
 
                 <form method="POST" class="js-firebase-logout" action="{{ Route::has('logout') ? route('logout') : '#' }}">

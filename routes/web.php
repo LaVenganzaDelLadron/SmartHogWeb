@@ -10,10 +10,8 @@ Route::get('/', function () {
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('show.login');
-Route::post('/login', [AuthController::class, 'Login'])->name('login');
 
 Route::get('/signup', [AuthController::class, 'showSignup'])->name('show.signup');
-Route::post('/signup', [AuthController::class, 'Signup'])->name('signup');
 
 Route::post('/logout', [AuthController::class, 'Logout'])->name('logout');
 
