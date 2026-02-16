@@ -13,8 +13,6 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('show.login');
 
 Route::get('/signup', [AuthController::class, 'showSignup'])->name('show.signup');
 
-Route::post('/logout', [AuthController::class, 'Logout'])->name('logout');
-
 // Protected Routes
 Route::middleware('auth.custom')->group(function () {
     Route::get('/home', [DashboardController::class, 'showDashboard'])->name('show.dashobard');
