@@ -10,7 +10,6 @@ Route::get('/', function () {
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('show.login');
-
 Route::get('/signup', [AuthController::class, 'showSignup'])->name('show.signup');
 
 // Protected Routes
