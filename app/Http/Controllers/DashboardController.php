@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 class DashboardController extends Controller
 {
     public function showDashboard()
@@ -20,6 +18,7 @@ class DashboardController extends Controller
     {
         return view('feeding.index');
     }
+
     public function showMonitorManagement()
     {
         return view('monitor.index');
@@ -30,4 +29,8 @@ class DashboardController extends Controller
         return view('notifications.index');
     }
 
+    public function showReports()
+    {
+        return view('reports.index');
+    }
 }

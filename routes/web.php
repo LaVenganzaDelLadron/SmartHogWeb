@@ -19,4 +19,5 @@ Route::middleware('auth.custom')->group(function () {
     Route::get('/feeding', [DashboardController::class, 'showFeedingManagement'])->name('show.feeding');
     Route::get('/monitor', [DashboardController::class, 'showMonitorManagement'])->name('show.monitor');
     Route::get('/notifications', [DashboardController::class, 'showNotifications'])->name('show.notifications');
+    Route::get('/reports', [DashboardController::class, 'showReports'])->name('reports.index');
 });
