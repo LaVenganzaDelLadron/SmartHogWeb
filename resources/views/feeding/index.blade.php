@@ -19,7 +19,7 @@
         @include('layouts.sidebar', ['deviceOnline' => true])
 
         <main class="min-h-screen px-4 pb-10 pt-20 lg:ml-80 lg:px-8 lg:pt-8">
-            <div class="mx-auto max-w-7xl space-y-6">
+            <div id="feeding-page-content" class="mx-auto max-w-7xl space-y-6 transition duration-300">
                 <section class="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>
@@ -27,7 +27,7 @@
                             <h1 class="mt-2 text-2xl font-semibold text-slate-900 sm:text-3xl">Feeding Management</h1>
                             <p class="mt-2 max-w-3xl text-sm text-slate-600">Manage feeding schedules, monitor dispenser activity, and quickly act on delays to keep operations reliable and automated.</p>
                         </div>
-                        <button type="button" class="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2">
+                        <button type="button" data-open-feeding-modal class="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2">
                             <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                 <path stroke-linecap="round" d="M10 4v12M4 10h12" />
                             </svg>
@@ -142,7 +142,7 @@
                                             </td>
                                             <td class="px-4 py-3">
                                                 <div class="flex flex-wrap gap-1.5">
-                                                    <button type="button" class="rounded-md border border-emerald-200 px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50">Add</button>
+                                                    <button type="button" data-open-feeding-modal class="rounded-md border border-emerald-200 px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50">Add</button>
                                                     <button type="button" class="rounded-md border border-amber-200 px-2.5 py-1 text-xs font-medium text-amber-800 hover:bg-amber-50">Edit</button>
                                                     <button type="button" class="rounded-md border border-rose-200 px-2.5 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50">Delete</button>
                                                 </div>
@@ -204,6 +204,8 @@
                 </section>
             </div>
         </main>
+
+        @include('feeding.add_feed_sched')
 
         <script>
             document.querySelectorAll('.feeder-toggle').forEach((toggle) => {

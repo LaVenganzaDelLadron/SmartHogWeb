@@ -19,7 +19,7 @@
         @include('layouts.sidebar', ['deviceOnline' => true])
 
         <main class="min-h-screen px-4 pb-10 pt-20 lg:ml-80 lg:px-8 lg:pt-8">
-            <div class="mx-auto max-w-7xl space-y-6">
+            <div id="pig-page-content" class="mx-auto max-w-7xl space-y-6 transition duration-300">
                 <section class="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>
@@ -28,7 +28,7 @@
                             <p class="mt-2 max-w-3xl text-sm text-slate-600">Register, organize, and monitor pig batches with quick access to growth, feeding, and health records.</p>
                         </div>
 
-                        <button type="button" class="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2">
+                        <button type="button" data-open-pig-modal class="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2">
                             <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                 <path stroke-linecap="round" d="M10 4v12M4 10h12" />
                             </svg>
@@ -209,5 +209,7 @@
                 </section>
             </div>
         </main>
+
+        @include('pig.add_pig')
     </body>
 </html>

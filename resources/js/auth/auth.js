@@ -48,6 +48,15 @@ function mapLoginError(code) {
     }
 }
 
+function isCredentialError(code, message) {
+    if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        return true;
+    }
+
+    const normalizedMessage = String(message || '').toLowerCase();
+    return normalizedMessage.includes('invalid username or password') || normalizedMessage.includes('invalid email or password');
+}
+
 async function postLaravelAuth(form, payload) {
     const response = await fetch(form.action, {
         method: 'POST',
@@ -234,7 +243,18 @@ function bindLoginForm() {
         } catch (error) {
             const code = error && typeof error === 'object' ? error.code : null;
             const fallback = error instanceof Error ? error.message : 'Login failed. Please try again.';
-            setFormError('loginError', code ? mapLoginError(code) : fallback);
+            const alertMessage = code ? mapLoginError(code) : fallback;
+            const title = isCredentialError(code, fallback) ? 'Wrong Credentials' : 'Login Failed';
+
+            setFormError('loginError', alertMessage);
+
+            if (typeof window.showWarningAlert === 'function') {
+                window.showWarningAlert({
+                    title,
+                    message: alertMessage,
+                    durationMs: 3200,
+                });
+            }
         } finally {
             if (submitBtn) {
                 submitBtn.disabled = false;
