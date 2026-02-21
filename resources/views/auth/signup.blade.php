@@ -74,9 +74,13 @@
                             type="password"
                             autocomplete="new-password"
                             required
+                            minlength="8"
+                            pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}"
+                            title="Password must be at least 8 characters and include uppercase, lowercase, number, and symbol."
                             class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 transition-[border-color,box-shadow,background-color] duration-200 placeholder:text-slate-400 focus:border-teal-500 focus:shadow-[0_0_0_3px_rgba(45,212,191,0.22),0_0_20px_rgba(14,116,144,0.2)] focus:outline-none"
                             placeholder="Create a strong password"
                         >
+                        <p class="mt-2 text-xs text-slate-500">Use at least 8 characters with uppercase, lowercase, number, and symbol.</p>
                         @error('password')
                             <p class="mt-2 text-xs text-rose-500">{{ $message }}</p>
                         @enderror

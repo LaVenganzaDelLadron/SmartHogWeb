@@ -28,6 +28,11 @@
                     </div>
                 </section>
 
+                <div>
+                    <label for="batch-name" class="mb-2 block text-sm font-medium text-slate-700">Batch Name <span class="text-rose-600">*</span></label>
+                    <input id="batch-name" name="batch_name" type="text" placeholder="e.g. Batch E" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" required>
+                </div>
+
                 <div class="grid gap-4 sm:grid-cols-3">
                     <div>
                         <label for="batch-count" class="mb-2 block text-sm font-medium text-slate-700">No. of Pigs <span class="text-rose-600">*</span></label>

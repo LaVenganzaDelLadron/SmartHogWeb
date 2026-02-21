@@ -3,6 +3,7 @@ const pigPageContent = document.getElementById('pig-page-content');
 const openPigModalButtons = document.querySelectorAll('[data-open-pig-modal]');
 const closePigModalButtons = document.querySelectorAll('[data-close-pig-modal]');
 const pigManagementForm = document.getElementById('pig-management-form');
+const pigBatchNameInput = document.getElementById('pig-batch-name');
 const pigCountInput = document.getElementById('pig-count');
 const pigStageInput = document.getElementById('pig-stage');
 const pigWeightInput = document.getElementById('pig-weight');
@@ -24,7 +25,7 @@ function openPigModal() {
     }
 
     window.setTimeout(() => {
-        pigCountInput?.focus();
+        pigBatchNameInput?.focus();
     }, 100);
 }
 

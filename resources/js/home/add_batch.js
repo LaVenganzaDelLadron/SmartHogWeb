@@ -3,6 +3,7 @@ const homePageContent = document.getElementById('home-page-content');
 const openBatchModalButtons = document.querySelectorAll('[data-open-batch-modal]');
 const closeBatchModalButtons = document.querySelectorAll('[data-close-batch-modal]');
 const addBatchForm = document.getElementById('add-batch-form');
+const batchNameInput = document.getElementById('batch-name');
 const batchCountInput = document.getElementById('batch-count');
 const batchStageInput = document.getElementById('batch-stage');
 const batchWeightInput = document.getElementById('batch-weight');
@@ -24,7 +25,7 @@ function openBatchModal() {
     }
 
     window.setTimeout(() => {
-        batchCountInput?.focus();
+        batchNameInput?.focus();
     }, 100);
 }
 
