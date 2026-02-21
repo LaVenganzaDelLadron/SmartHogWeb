@@ -22,7 +22,8 @@
 
             <div id="batch-form-feedback" class="mt-4 hidden rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800"></div>
 
-            <form id="add-batch-form" class="mt-6 space-y-5">
+            <form id="add-batch-form" method="POST" action="{{ route('batches.add') }}" class="mt-6 space-y-5">
+                @csrf
                 <section class="rounded-2xl border border-slate-200 bg-slate-50/60 p-3">
                     <p class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Quick Presets</p>
                     <div class="mt-2 flex flex-wrap gap-2">
@@ -58,13 +59,12 @@
                 </div>
 
                 <div>
-                    <label for="batch-pen" class="mb-2 block text-sm font-medium text-slate-700">Assigned Pen <span class="text-rose-600">*</span></label>
-                    <select id="batch-pen" name="assigned_pen" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" required>
+                    <label for="pig-pen" class="mb-2 block text-sm font-medium text-slate-700">Assigned Pen <span class="text-rose-600">*</span></label>
+                    <select id="pig-pen" name="assigned_pen" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" required>
                         <option value="">Select pen</option>
-                        <option value="pen-a">Pen A</option>
-                        <option value="pen-b">Pen B</option>
-                        <option value="pen-c">Pen C</option>
-                        <option value="pen-d">Pen D</option>
+                        @foreach (($pens ?? collect()) as $pen)
+                            <option value="{{ $pen->pen_code }}">{{ $pen->pen_name }} ({{ $pen->pen_code }})</option>
+                        @endforeach
                     </select>
                 </div>
 

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('health_records', function (Blueprint $table) {
-            $table->increments('health_id');
+            $table->string('health_id')->primary();
             $table->string('batch_id');
             $table->boolean('vaccine_given');
             $table->boolean('vitamin_given');

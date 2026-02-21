@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('feeding_records', function (Blueprint $table) {
-            $table->increments('feeding_id');
+            $table->string('feeding_id')->primary();
             $table->string('batch_id');
             $table->float('feeding_quantity_kg');
             $table->time('feeding_time');

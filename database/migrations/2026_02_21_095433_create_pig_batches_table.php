@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('pig_batches', function (Blueprint $table) {
             $table->string('batch_id')->primary();
+            $table->string('batch_name')->unique();
             $table->integer('no_of_pigs');
             $table->float('avg_weight_kg');
             $table->text('notes')->nullable();
-            $table->unsignedInteger('pen_id');
+            $table->string('pen_id');
             $table->timestamp('record_date')->useCurrent();
 
-            $table->foreign('pen_id')->references('pen_id')->on('pens')->cascadeOnDelete();
+            $table->foreign('pen_id')->references('pen_code')->on('pens')->cascadeOnDelete();
         });
     }
 

@@ -3,17 +3,34 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Pen;
 
 class DashboardController extends Controller
 {
     public function showDashboard()
     {
-        return view('home.index');
+        $pens = Pen::query()
+            ->select(['pen_code', 'pen_name'])
+            ->whereNotNull('pen_code')
+            ->orderBy('pen_name')
+            ->get();
+
+        return view('home.index', [
+            'pens' => $pens,
+        ]);
     }
 
     public function showPigManagement()
     {
-        return view('pig.index');
+        $pens = Pen::query()
+            ->select(['pen_code', 'pen_name'])
+            ->whereNotNull('pen_code')
+            ->orderBy('pen_name')
+            ->get();
+
+        return view('pig.index', [
+            'pens' => $pens,
+        ]);
     }
 
     public function showFeedingManagement()

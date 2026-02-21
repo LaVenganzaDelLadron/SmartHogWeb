@@ -5,4 +5,7 @@ import './firebase';
 import './auth/auth';
 import './auth/greet';
 import './feed/feeding_schedules';
+import './forms/add_pen_alerts';
+import './forms/add_pig_alerts';
+import './forms/add_batch_alerts';
 import '../views/notifications/cards';

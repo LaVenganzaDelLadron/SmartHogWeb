@@ -13,7 +13,11 @@ return new class extends Migration
     {
         Schema::create('pens', function (Blueprint $table) {
             $table->increments('pen_id');
+            $table->string('pen_code', 20)->nullable()->unique();
             $table->string('pen_name');
+            $table->integer('capacity');
+            $table->string('status')->default('available');
+            $table->string('notes')->nullable();
             $table->timestamp('record_date')->useCurrent();
         });
     }
