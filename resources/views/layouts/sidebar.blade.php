@@ -7,10 +7,10 @@
 
     $mainMenu = [
         [
-            'label' => 'Dashboard/Home',
+            'label' => 'Dashboard',
             'icon' => 'dashboard',
-            'route' => Route::has('dashboard') ? route('dashboard') : (Route::has('show.dashobard') ? route('show.dashobard') : '#'),
-            'active' => request()->routeIs('dashboard') || request()->routeIs('show.dashobard'),
+            'route' => Route::has('dashboard') ? route('dashboard') : (Route::has('show.dashboard') ? route('show.dashboard') : '#'),
+            'active' => request()->routeIs('dashboard') || request()->routeIs('show.dashboard'),
         ],
         [
             'label' => 'Pig Management',

@@ -1,5 +1,9 @@
-<div id="feeding-schedule-modal" class="pointer-events-none fixed inset-0 z-[70] opacity-0 transition duration-200" aria-hidden="true">
-    <div data-close-feeding-modal class="absolute inset-0 bg-slate-900/30 backdrop-blur-sm"></div>
+@php
+    $showFeedingModal = request('modal') === 'add-feeding';
+@endphp
+
+<div id="feeding-schedule-modal" class="{{ $showFeedingModal ? 'fixed inset-0 z-[70] opacity-100' : 'hidden' }} transition duration-200" aria-hidden="{{ $showFeedingModal ? 'false' : 'true' }}">
+    <a href="{{ route('show.feeding') }}" class="absolute inset-0 bg-slate-900/30 backdrop-blur-sm" aria-label="Close modal"></a>
 
     <div class="absolute inset-0 flex items-center justify-center p-4">
         <div class="pointer-events-auto w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-6">
@@ -8,11 +12,11 @@
                     <h2 id="feeding-schedule-title" class="text-lg font-semibold text-slate-900">Add Feeding Schedule</h2>
                     <p class="mt-1 text-sm text-slate-500">Set batch, time, and quantity.</p>
                 </div>
-                <button type="button" data-close-feeding-modal class="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700" aria-label="Close modal">
+                <a href="{{ route('show.feeding') }}" class="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700" aria-label="Close modal">
                     <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path stroke-linecap="round" d="M5 5l10 10M15 5 5 15" />
                     </svg>
-                </button>
+                </a>
             </div>
 
             <div id="feed-form-feedback" class="mt-4 hidden rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800"></div>
@@ -64,7 +68,7 @@
                 </div>
 
                 <div class="flex justify-end gap-2 pt-1">
-                    <button type="button" data-close-feeding-modal class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">Cancel</button>
+                    <a href="{{ route('show.feeding') }}" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">Cancel</a>
                     <button type="submit" class="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2">Save</button>
                 </div>
             </form>

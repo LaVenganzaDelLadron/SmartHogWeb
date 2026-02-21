@@ -1,18 +1,19 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
     public function showSignup()
     {
         if (Auth::check()) {
-            return redirect()->route('show.dashobard');
+            return redirect()->route('show.dashboard');
         }
 
         return view('auth.signup');
@@ -21,7 +22,7 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::check()) {
-            return redirect()->route('show.dashobard');
+            return redirect()->route('show.dashboard');
         }
 
         return view('auth.login');
@@ -35,7 +36,7 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-          $validated['password'] = Hash::make($validated['password']);
+        $validated['password'] = Hash::make($validated['password']);
 
         User::create($validated);
 
@@ -66,13 +67,13 @@ class AuthController extends Controller
             if ($request->expectsJson()) {
                 return response()->json([
                     'ok' => true,
-                    'redirect' => route('show.dashobard'),
+                    'redirect' => route('show.dashboard'),
                     'message' => 'Welcome Back!',
                 ]);
             }
 
             return redirect()
-                ->route('show.dashobard')
+                ->route('show.dashboard')
                 ->with('success', 'Welcome Back!');
         }
 

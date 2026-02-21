@@ -19,7 +19,7 @@
         @include('layouts.sidebar', ['deviceOnline' => true])
 
         <main class="min-h-screen px-4 pb-10 pt-20 lg:ml-80 lg:px-8 lg:pt-8">
-            <div id="pig-page-content" class="mx-auto max-w-7xl space-y-6 transition duration-300">
+            <div id="pig-page-content" class="mx-auto max-w-7xl space-y-6 transition duration-300 {{ in_array(request('modal'), ['add-pen', 'add-pig'], true) ? 'blur-[2px] pointer-events-none select-none' : '' }}">
                 <section class="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>
@@ -28,12 +28,20 @@
                             <p class="mt-2 max-w-3xl text-sm text-slate-600">Register, organize, and monitor pig batches with quick access to growth, feeding, and health records.</p>
                         </div>
 
-                        <button type="button" data-open-pig-modal class="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2">
-                            <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <path stroke-linecap="round" d="M10 4v12M4 10h12" />
-                            </svg>
-                            Add New Pig Batch
-                        </button>
+                        <div class="flex flex-wrap gap-2">
+                            <a href="{{ route('show.pig', ['modal' => 'add-pen']) }}" class="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2">
+                                <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <path stroke-linecap="round" d="M3.5 6.5h13M3.5 10h13M3.5 13.5h13" />
+                                </svg>
+                                Add Pen
+                            </a>
+                            <a href="{{ route('show.pig', ['modal' => 'add-pig']) }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2">
+                                <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <path stroke-linecap="round" d="M10 4v12M4 10h12" />
+                                </svg>
+                                Add New Pig Batch
+                            </a>
+                        </div>
                     </div>
                 </section>
 
@@ -210,6 +218,7 @@
             </div>
         </main>
 
+        @include('pig.add_pen')
         @include('pig.add_pig')
     </body>
 </html>

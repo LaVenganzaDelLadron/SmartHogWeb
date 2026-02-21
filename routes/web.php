@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Dashboard\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -14,7 +14,7 @@ Route::get('/signup', [AuthController::class, 'showSignup'])->name('show.signup'
 
 // Protected Routes
 Route::middleware('auth.custom')->group(function () {
-    Route::get('/home', [DashboardController::class, 'showDashboard'])->name('show.dashobard');
+    Route::get('/home', [DashboardController::class, 'showDashboard'])->name('show.dashboard');
     Route::get('/pig', [DashboardController::class, 'showPigManagement'])->name('show.pig');
     Route::get('/feeding', [DashboardController::class, 'showFeedingManagement'])->name('show.feeding');
     Route::get('/monitor', [DashboardController::class, 'showMonitorManagement'])->name('show.monitor');
