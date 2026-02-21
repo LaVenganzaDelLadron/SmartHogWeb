@@ -11,27 +11,55 @@ const feedBatchIdInput = document.getElementById('feed-batch-id');
 const feedBatchTarget = document.getElementById('feed-batch-target');
 const feedFormFeedback = document.getElementById('feed-form-feedback');
 const quickTimeButtons = document.querySelectorAll('[data-fill-time]');
+const quickDateButtons = document.querySelectorAll('[data-fill-date]');
 const quickQuantityButtons = document.querySelectorAll('[data-fill-quantity]');
 const quantityStepButtons = document.querySelectorAll('[data-quantity-step]');
 const quickBatchButtons = document.querySelectorAll('[data-fill-batch-id]');
 const quickFeedingTypeButtons = document.querySelectorAll('[data-fill-feeding-type]');
 
+function formatLocalDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
+
 function setDefaultDate() {
-    if (!feedDateInput || feedDateInput.value) {
+    if (!feedDateInput) {
         return;
     }
 
-    const today = new Date();
-    const date = today.toISOString().split('T')[0];
-    feedDateInput.value = date;
+    feedDateInput.value = formatLocalDate(new Date());
+}
+
+function setDateMinimum() {
+    if (!feedDateInput) {
+        return;
+    }
+
+    feedDateInput.min = formatLocalDate(new Date());
+}
+
+function enforceDateNotInPast() {
+    if (!feedDateInput || !feedDateInput.value) {
+        return;
+    }
+
+    if (feedDateInput.value < feedDateInput.min) {
+        feedDateInput.setCustomValidity('Past dates are not allowed.');
+    } else {
+        feedDateInput.setCustomValidity('');
+    }
 }
 
 function setDefaultTime() {
-    if (!feedTimeInput || feedTimeInput.value) {
+    if (!feedTimeInput) {
         return;
     }
 
-    feedTimeInput.value = '07:00';
+    const now = new Date();
+    feedTimeInput.value = now.toTimeString().slice(0, 5);
 }
 
 function openFeedingModal() {
@@ -40,6 +68,7 @@ function openFeedingModal() {
     }
 
     setDefaultDate();
+    setDateMinimum();
     setDefaultTime();
     feedingModal.classList.remove('pointer-events-none', 'opacity-0');
     feedingModal.setAttribute('aria-hidden', 'false');
@@ -113,6 +142,27 @@ quickTimeButtons.forEach((button) => {
     });
 });
 
+quickDateButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+        if (!feedDateInput) {
+            return;
+        }
+
+        const value = button.getAttribute('data-fill-date');
+        const today = new Date();
+        const date = new Date(today);
+
+        if (value === 'tomorrow') {
+            date.setDate(today.getDate() + 1);
+        }
+
+        const normalizedDate = formatLocalDate(date);
+        feedDateInput.value = normalizedDate;
+        enforceDateNotInPast();
+        feedDateInput.focus();
+    });
+});
+
 quickQuantityButtons.forEach((button) => {
     button.addEventListener('click', () => {
         const value = button.getAttribute('data-fill-quantity');
@@ -148,6 +198,8 @@ feedBatchIdInput?.addEventListener('change', () => {
     applyBatchSelection(feedBatchIdInput.value);
 });
 
+feedDateInput?.addEventListener('input', enforceDateNotInPast);
+
 quantityStepButtons.forEach((button) => {
     button.addEventListener('click', () => {
         if (!feedQuantityInput) {
@@ -162,25 +214,73 @@ quantityStepButtons.forEach((button) => {
     });
 });
 
-feedingScheduleForm?.addEventListener('submit', (event) => {
+feedingScheduleForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
+    enforceDateNotInPast();
 
     if (!feedingScheduleForm.reportValidity()) {
+        window.showWarningAlert?.({
+            title: 'Cannot Save Schedule',
+            message: 'Please complete the required fields before saving.',
+        });
         return;
     }
 
-    if (feedFormFeedback) {
-        feedFormFeedback.textContent = 'Schedule saved successfully.';
-        feedFormFeedback.classList.remove('hidden');
-    }
+    const formData = new FormData(feedingScheduleForm);
+    const csrfToken = formData.get('_token');
+    const payload = {
+        batch_id: formData.get('feed_batch_id'),
+        feeding_quantity_kg: formData.get('feed_quantity'),
+        feeding_time: formData.get('feed_time'),
+        feeding_date: formData.get('feed_date'),
+        feeding_type: formData.get('feed_type'),
+    };
 
-    window.setTimeout(() => {
-        feedingScheduleForm.reset();
-        if (feedBatchTarget) {
-            feedBatchTarget.textContent = 'Choose a batch to show exact pig count.';
+    try {
+        const response = await fetch('/api/feeding/schedules/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': typeof csrfToken === 'string' ? csrfToken : '',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (response.ok) {
+            closeFeedingModal();
+
+            window.showSuccessAlert?.({
+                title: 'Saved Successfully',
+                message: data.feeding_id
+                    ? `${data.message ?? 'Feeding schedule was saved.'} ID: ${data.feeding_id}`
+                    : (data.message ?? 'Feeding schedule was saved.'),
+            });
+
+            feedingScheduleForm.reset();
+            if (feedBatchTarget) {
+                feedBatchTarget.textContent = 'Choose a batch to show exact pig count.';
+            }
+            setDefaultDate();
+            setDefaultTime();
+            return;
         }
-        setDefaultDate();
-        setDefaultTime();
-        closeFeedingModal();
-    }, 700);
+
+        const validationErrors = data.errors ? Object.values(data.errors).flat() : [];
+        const firstError = validationErrors.length > 0 ? String(validationErrors[0]) : null;
+
+        window.showWarningAlert?.({
+            title: 'Saving Failed',
+            message: firstError ?? data.message ?? 'Schedule was not saved. Please check your input and try again.',
+        });
+    } catch (error) {
+        window.showWarningAlert?.({
+            title: 'Connection Error',
+            message: 'Could not save feeding schedule right now. Please try again.',
+        });
+    }
 });
+
+setDateMinimum();

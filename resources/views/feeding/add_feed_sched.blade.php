@@ -22,6 +22,7 @@
             <div id="feed-form-feedback" class="mt-4 hidden rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800"></div>
 
             <form id="feeding-schedule-form" class="mt-4 space-y-4">
+                @csrf
                 <div>
                     <label for="feed-batch-id" class="mb-1.5 block text-sm font-medium text-slate-700">Batch ID <span class="text-rose-600">*</span></label>
                     <select id="feed-batch-id" name="feed_batch_id" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" required>
@@ -52,14 +53,27 @@
                     </select>
                 </div>
 
+                <section class="rounded-2xl border border-slate-200 bg-slate-50/60 p-3">
+                    <p class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Date and Time Shortcuts</p>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" data-fill-date="today" class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100">Today</button>
+                        <button type="button" data-fill-date="tomorrow" class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100">Tomorrow</button>
+                        <button type="button" data-fill-time="07:00" class="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50">7:00 AM</button>
+                        <button type="button" data-fill-time="12:00" class="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50">12:00 PM</button>
+                        <button type="button" data-fill-time="17:00" class="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50">5:00 PM</button>
+                    </div>
+                </section>
+
                 <div class="grid gap-3 sm:grid-cols-2">
                     <div>
                         <label for="feed-date" class="mb-1.5 block text-sm font-medium text-slate-700">Date <span class="text-rose-600">*</span></label>
-                        <input id="feed-date" name="feed_date" type="date" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" required>
+                        <input id="feed-date" name="feed_date" type="date" min="{{ now()->toDateString() }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" required>
+                        <p class="mt-1 text-xs text-slate-500">Past dates are disabled.</p>
                     </div>
                     <div>
                         <label for="feed-time" class="mb-1.5 block text-sm font-medium text-slate-700">Time <span class="text-rose-600">*</span></label>
                         <input id="feed-time" name="feed_time" type="time" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" required>
+                        <p class="mt-1 text-xs text-slate-500">Use shortcuts above or pick exact time.</p>
                     </div>
                 </div>
 

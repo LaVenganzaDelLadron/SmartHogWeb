@@ -93,66 +93,7 @@
                 </section>
 
                 <section class="grid gap-6 xl:grid-cols-3">
-                    <article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm xl:col-span-2 sm:p-6">
-                        <div class="flex flex-wrap items-center justify-between gap-3">
-                            <div>
-                                <h2 class="text-lg font-semibold text-slate-900">Feeding Schedule</h2>
-                                <p class="text-sm text-slate-600">View and manage feed times, quantities, and execution status by pen.</p>
-                            </div>
-                            <div class="inline-flex rounded-xl border border-slate-200 p-1">
-                                <button type="button" class="rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white">Today</button>
-                                <button type="button" class="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50">Tomorrow</button>
-                            </div>
-                        </div>
-
-                        @php
-                            $schedule = [
-                                ['time' => '07:00 AM', 'qty' => '22 kg', 'pen' => 'Pen A', 'status' => 'completed'],
-                                ['time' => '11:30 AM', 'qty' => '20 kg', 'pen' => 'Pen C', 'status' => 'completed'],
-                                ['time' => '03:30 PM', 'qty' => '42 kg', 'pen' => 'Pen B', 'status' => 'pending'],
-                                ['time' => '06:00 PM', 'qty' => '18 kg', 'pen' => 'Pen D', 'status' => 'delayed'],
-                            ];
-                        @endphp
-
-                        <div class="mt-4 overflow-x-auto rounded-2xl border border-slate-200">
-                            <table class="min-w-[760px] w-full text-left text-sm">
-                                <thead class="bg-slate-50 text-xs uppercase tracking-[0.08em] text-slate-500">
-                                    <tr>
-                                        <th class="px-4 py-3 font-semibold">Time</th>
-                                        <th class="px-4 py-3 font-semibold">Feed Quantity</th>
-                                        <th class="px-4 py-3 font-semibold">Pig Group/Pen</th>
-                                        <th class="px-4 py-3 font-semibold">Status</th>
-                                        <th class="px-4 py-3 font-semibold">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-100 bg-white">
-                                    @foreach ($schedule as $item)
-                                        <tr class="odd:bg-white even:bg-slate-50/40 hover:bg-slate-50/80">
-                                            <td class="px-4 py-3 font-semibold text-slate-900">{{ $item['time'] }}</td>
-                                            <td class="px-4 py-3 text-slate-600">{{ $item['qty'] }}</td>
-                                            <td class="px-4 py-3 text-slate-600">{{ $item['pen'] }}</td>
-                                            <td class="px-4 py-3">
-                                                @if ($item['status'] === 'completed')
-                                                    <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Completed</span>
-                                                @elseif ($item['status'] === 'pending')
-                                                    <span class="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800">Pending</span>
-                                                @else
-                                                    <span class="rounded-full bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-700">Delayed</span>
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-3">
-                                                <div class="flex flex-wrap gap-1.5">
-                                                    <a href="{{ route('show.feeding', ['modal' => 'add-feeding']) }}" class="rounded-md border border-emerald-200 px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50">Add</a>
-                                                    <button type="button" class="rounded-md border border-amber-200 px-2.5 py-1 text-xs font-medium text-amber-800 hover:bg-amber-50">Edit</button>
-                                                    <button type="button" class="rounded-md border border-rose-200 px-2.5 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50">Delete</button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </article>
+                    @include('feeding.feeding_card')
 
                     <article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
                         <div class="flex items-center justify-between">
