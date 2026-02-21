@@ -6,10 +6,14 @@ const feedingScheduleForm = document.getElementById('feeding-schedule-form');
 const feedDateInput = document.getElementById('feed-date');
 const feedTimeInput = document.getElementById('feed-time');
 const feedQuantityInput = document.getElementById('feed-quantity');
+const feedPenInput = document.getElementById('feed-pen');
+const feedBatchIdInput = document.getElementById('feed-batch-id');
+const feedBatchTarget = document.getElementById('feed-batch-target');
 const feedFormFeedback = document.getElementById('feed-form-feedback');
 const quickTimeButtons = document.querySelectorAll('[data-fill-time]');
 const quickQuantityButtons = document.querySelectorAll('[data-fill-quantity]');
 const quantityStepButtons = document.querySelectorAll('[data-quantity-step]');
+const quickBatchButtons = document.querySelectorAll('[data-fill-batch-id]');
 
 function setDefaultDate() {
     if (!feedDateInput || feedDateInput.value) {
@@ -75,6 +79,34 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
+function applyBatchSelection(batchId) {
+    if (!feedBatchIdInput || !batchId) {
+        return;
+    }
+
+    feedBatchIdInput.value = batchId;
+    const selectedOption = feedBatchIdInput.selectedOptions[0];
+    if (!selectedOption) {
+        return;
+    }
+
+    const targetPigs = selectedOption.getAttribute('data-pigs');
+    const targetPen = selectedOption.getAttribute('data-pen');
+    const suggestedQuantity = selectedOption.getAttribute('data-qty');
+
+    if (feedBatchTarget) {
+        feedBatchTarget.textContent = targetPigs || 'No pig count available for this batch.';
+    }
+
+    if (feedPenInput && targetPen) {
+        feedPenInput.value = targetPen;
+    }
+
+    if (feedQuantityInput && suggestedQuantity && !feedQuantityInput.value) {
+        feedQuantityInput.value = suggestedQuantity;
+    }
+}
+
 quickTimeButtons.forEach((button) => {
     button.addEventListener('click', () => {
         const value = button.getAttribute('data-fill-time');
@@ -93,6 +125,21 @@ quickQuantityButtons.forEach((button) => {
             feedQuantityInput.focus();
         }
     });
+});
+
+quickBatchButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+        const value = button.getAttribute('data-fill-batch-id');
+        if (!value) {
+            return;
+        }
+        applyBatchSelection(value);
+        feedBatchIdInput?.focus();
+    });
+});
+
+feedBatchIdInput?.addEventListener('change', () => {
+    applyBatchSelection(feedBatchIdInput.value);
 });
 
 quantityStepButtons.forEach((button) => {
@@ -123,6 +170,9 @@ feedingScheduleForm?.addEventListener('submit', (event) => {
 
     window.setTimeout(() => {
         feedingScheduleForm.reset();
+        if (feedBatchTarget) {
+            feedBatchTarget.textContent = 'Choose a batch to show exact pig count.';
+        }
         setDefaultDate();
         setDefaultTime();
         closeFeedingModal();

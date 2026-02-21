@@ -4,5 +4,7 @@ import '../views/components/warning-alert';
 import './firebase';
 import './auth/auth';
 import './auth/greet';
+import './home/add_batch';
 import './feed/feeding_schedules';
 import './pig/pig_management';
+import '../views/notifications/cards';
