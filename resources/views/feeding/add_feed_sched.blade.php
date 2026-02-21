@@ -26,12 +26,30 @@
                     <label for="feed-batch-id" class="mb-1.5 block text-sm font-medium text-slate-700">Batch ID <span class="text-rose-600">*</span></label>
                     <select id="feed-batch-id" name="feed_batch_id" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" required>
                         <option value="">Choose batch ID</option>
-                        <option value="BATCH-001" data-pen="pen-a" data-pigs="30 pigs" data-qty="22">BATCH-001</option>
-                        <option value="BATCH-002" data-pen="pen-b" data-pigs="24 pigs" data-qty="42">BATCH-002</option>
-                        <option value="BATCH-003" data-pen="pen-c" data-pigs="28 pigs" data-qty="20">BATCH-003</option>
-                        <option value="BATCH-004" data-pen="pen-d" data-pigs="18 pigs" data-qty="18">BATCH-004</option>
+                        @foreach (($feedingBatches ?? collect()) as $feedingBatch)
+                            <option value="{{ $feedingBatch->batch_id }}" data-pigs="{{ $feedingBatch->no_of_pigs }} pigs">{{ $feedingBatch->batch_id }}</option>
+                        @endforeach
                     </select>
                     <p class="mt-1 text-xs text-slate-500">Target pigs: <span id="feed-batch-target" class="font-medium">Choose a batch to show exact pig count.</span></p>
+                </div>
+
+                <section class="rounded-2xl border border-slate-200 bg-slate-50/60 p-3">
+                    <p class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Feeding Type</p>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        @foreach (($feedingTypes ?? collect()) as $feedingType)
+                            <button type="button" data-fill-feeding-type="{{ $feedingType->growth_name }}" class="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50">{{ $feedingType->growth_name }}</button>
+                        @endforeach
+                    </div>
+                </section>
+
+                <div>
+                    <label for="feed-type" class="mb-1.5 block text-sm font-medium text-slate-700">Feeding Type <span class="text-rose-600">*</span></label>
+                    <select id="feed-type" name="feed_type" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" required>
+                        <option value="">Select feeding type</option>
+                        @foreach (($feedingTypes ?? collect()) as $feedingType)
+                            <option value="{{ $feedingType->growth_name }}">{{ $feedingType->growth_name }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div class="grid gap-3 sm:grid-cols-2">
@@ -50,21 +68,6 @@
                         <label for="feed-quantity" class="mb-1.5 block text-sm font-medium text-slate-700">Quantity (kg) <span class="text-rose-600">*</span></label>
                         <input id="feed-quantity" name="feed_quantity" type="number" step="0.5" min="1" placeholder="e.g. 42" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" required>
                     </div>
-                    <div>
-                        <label for="feed-pen" class="mb-1.5 block text-sm font-medium text-slate-700">Pen <span class="text-rose-600">*</span></label>
-                        <select id="feed-pen" name="feed_pen" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" required>
-                            <option value="">Select pen</option>
-                            <option value="pen-a">Pen A</option>
-                            <option value="pen-b">Pen B</option>
-                            <option value="pen-c">Pen C</option>
-                            <option value="pen-d">Pen D</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label for="feed-notes" class="mb-1.5 block text-sm font-medium text-slate-700">Notes</label>
-                    <textarea id="feed-notes" name="feed_notes" rows="2" placeholder="Optional notes..." class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"></textarea>
                 </div>
 
                 <div class="flex justify-end gap-2 pt-1">

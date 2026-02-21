@@ -30,7 +30,9 @@ if (homeBatchForm instanceof HTMLFormElement) {
         const payload = {
             batch_name: formData.get('batch_name'),
             no_of_pigs: formData.get('pig_count'),
+            current_age_days: formData.get('current_age_days'),
             avg_weight_kg: formData.get('avg_weight'),
+            growth_stage: formData.get('growth_stage'),
             notes: formData.get('notes'),
             pen_id: formData.get('assigned_pen'),
         };

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\Pig\PigController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -17,3 +18,6 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Adding a pen
 Route::post('/pens/add', [PigController::class, 'addPen'])->name('pens.add');
 Route::post('/batches/add', [PigController::class, 'addBatch'])->name('batches.add');
+Route::get('/notifications', [NotificationController::class, 'list'])->name('notifications.list');
+Route::post('/notifications/receive', [NotificationController::class, 'store'])->name('notifications.store');
+Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');

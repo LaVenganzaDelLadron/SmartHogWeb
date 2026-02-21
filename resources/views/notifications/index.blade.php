@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title>Notifications | {{ config('app.name', 'SMART-HOG') }}</title>
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
@@ -16,7 +17,7 @@
         @endif
     </head>
     <body class="min-h-screen bg-[radial-gradient(70rem_45rem_at_0%_-10%,rgba(16,185,129,0.12),transparent),radial-gradient(60rem_40rem_at_100%_0%,rgba(59,130,246,0.09),transparent),#f5f7f8] text-slate-800 antialiased">
-        @include('layouts.sidebar', ['deviceOnline' => true, 'newNotificationsCount' => 5])
+        @include('layouts.sidebar', ['deviceOnline' => true, 'newNotificationsCount' => $newNotificationsCount ?? 0])
 
         <main class="min-h-screen px-4 pb-10 pt-20 lg:ml-80 lg:px-8 lg:pt-8">
             <div class="mx-auto max-w-7xl space-y-6">
@@ -53,22 +54,12 @@
                     </div>
                 </section>
 
-                @php
-                    $notifications = [
-                        ['type' => 'admin', 'event' => 'approved', 'message' => 'Batch registration BATCH-019 was approved by Admin.', 'time' => '2026-02-13 08:42', 'status' => 'new'],
-                        ['type' => 'feeding', 'event' => 'completed', 'message' => 'Feeding cycle completed for Pen B (42 kg dispensed).', 'time' => '2026-02-13 07:05', 'status' => 'new'],
-                        ['type' => 'feeding', 'event' => 'delayed', 'message' => 'Feeding delay detected in Pen D due to low pressure.', 'time' => '2026-02-13 06:55', 'status' => 'new'],
-                        ['type' => 'system', 'event' => 'system alert', 'message' => 'Telemetry heartbeat dropped for Feeder C (auto-recovered).', 'time' => '2026-02-12 19:14', 'status' => 'read'],
-                        ['type' => 'pig-health', 'event' => 'warning', 'message' => 'Pig Group C vitamin reminder: due tomorrow at 08:00 AM.', 'time' => '2026-02-12 16:20', 'status' => 'new'],
-                        ['type' => 'admin', 'event' => 'rejected', 'message' => 'Schedule update request #SCH-771 was rejected for invalid quantity.', 'time' => '2026-02-12 11:08', 'status' => 'read'],
-                    ];
-                @endphp
-
                 <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-                    <div class="space-y-4" id="notifications-list"></div>
+                    <div class="space-y-4" id="notifications-list">
+                        @include('notifications.notif_card', ['notifications' => $notifications ?? collect()])
+                    </div>
                 </section>
             </div>
         </main>
-        <script id="notifications-data" type="application/json">@json($notifications)</script>
     </body>
 </html>

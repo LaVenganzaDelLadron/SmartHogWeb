@@ -15,9 +15,11 @@ return new class extends Migration
             $table->string('batch_id')->primary();
             $table->string('batch_name')->unique();
             $table->integer('no_of_pigs');
+            $table->integer('current_age_days');
             $table->float('avg_weight_kg');
             $table->text('notes')->nullable();
             $table->string('pen_id');
+            $table->string('growth_stage');
             $table->timestamp('record_date')->useCurrent();
 
             $table->foreign('pen_id')->references('pen_code')->on('pens')->cascadeOnDelete();

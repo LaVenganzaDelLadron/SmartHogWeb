@@ -20,9 +20,11 @@ class PigBatch extends Model
         'batch_id',
         'batch_name',
         'no_of_pigs',
+        'current_age_days',
         'avg_weight_kg',
         'notes',
         'pen_id',
+        'growth_stage',
     ];
 
     protected static function booted(): void

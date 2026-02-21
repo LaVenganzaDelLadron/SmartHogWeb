@@ -44,8 +44,8 @@
                             <p class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Total Pigs</p>
                             <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">Normal</span>
                         </div>
-                        <p class="mt-3 text-3xl font-semibold text-slate-900">124</p>
-                        <p class="mt-2 text-sm text-slate-600">4 active batches</p>
+                        <p class="mt-3 text-3xl font-semibold text-slate-900">{{ number_format($totalPigs ?? 0) }}</p>
+                        <p class="mt-2 text-sm text-slate-600">{{ number_format($activeBatches ?? 0) }} active batches</p>
                     </article>
 
                     <article class="rounded-2xl border border-amber-200 bg-white p-5 shadow-sm">

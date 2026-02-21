@@ -6,7 +6,7 @@ const feedingScheduleForm = document.getElementById('feeding-schedule-form');
 const feedDateInput = document.getElementById('feed-date');
 const feedTimeInput = document.getElementById('feed-time');
 const feedQuantityInput = document.getElementById('feed-quantity');
-const feedPenInput = document.getElementById('feed-pen');
+const feedTypeInput = document.getElementById('feed-type');
 const feedBatchIdInput = document.getElementById('feed-batch-id');
 const feedBatchTarget = document.getElementById('feed-batch-target');
 const feedFormFeedback = document.getElementById('feed-form-feedback');
@@ -14,6 +14,7 @@ const quickTimeButtons = document.querySelectorAll('[data-fill-time]');
 const quickQuantityButtons = document.querySelectorAll('[data-fill-quantity]');
 const quantityStepButtons = document.querySelectorAll('[data-quantity-step]');
 const quickBatchButtons = document.querySelectorAll('[data-fill-batch-id]');
+const quickFeedingTypeButtons = document.querySelectorAll('[data-fill-feeding-type]');
 
 function setDefaultDate() {
     if (!feedDateInput || feedDateInput.value) {
@@ -91,15 +92,10 @@ function applyBatchSelection(batchId) {
     }
 
     const targetPigs = selectedOption.getAttribute('data-pigs');
-    const targetPen = selectedOption.getAttribute('data-pen');
     const suggestedQuantity = selectedOption.getAttribute('data-qty');
 
     if (feedBatchTarget) {
         feedBatchTarget.textContent = targetPigs || 'No pig count available for this batch.';
-    }
-
-    if (feedPenInput && targetPen) {
-        feedPenInput.value = targetPen;
     }
 
     if (feedQuantityInput && suggestedQuantity && !feedQuantityInput.value) {
@@ -135,6 +131,16 @@ quickBatchButtons.forEach((button) => {
         }
         applyBatchSelection(value);
         feedBatchIdInput?.focus();
+    });
+});
+
+quickFeedingTypeButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+        const value = button.getAttribute('data-fill-feeding-type');
+        if (feedTypeInput && value) {
+            feedTypeInput.value = value;
+            feedTypeInput.focus();
+        }
     });
 });
 

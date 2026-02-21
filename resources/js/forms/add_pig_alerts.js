@@ -1,6 +1,19 @@
 const pigForm = document.getElementById('pig-management-form');
 
 if (pigForm instanceof HTMLFormElement) {
+    const growthStageInput = pigForm.querySelector('#pig-stage');
+    const presetButtons = pigForm.querySelectorAll('[data-fill-stage]');
+
+    presetButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const stage = button.getAttribute('data-fill-stage');
+            if (growthStageInput instanceof HTMLSelectElement && stage) {
+                growthStageInput.value = stage;
+                growthStageInput.focus();
+            }
+        });
+    });
+
     pigForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
@@ -17,7 +30,9 @@ if (pigForm instanceof HTMLFormElement) {
         const payload = {
             batch_name: formData.get('batch_name'),
             no_of_pigs: formData.get('pig_count'),
+            current_age_days: formData.get('current_age_days'),
             avg_weight_kg: formData.get('avg_weight'),
+            growth_stage: formData.get('growth_stage'),
             notes: formData.get('health_notes'),
             pen_id: formData.get('assigned_pen'),
         };
