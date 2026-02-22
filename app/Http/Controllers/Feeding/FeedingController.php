@@ -27,12 +27,10 @@ class FeedingController extends Controller
             ->orderBy('growth_id')
             ->get();
 
-        $feedingCards = $this->buildFeedingCards();
-
         return view('feeding.index', [
             'feedingBatches' => $feedingBatches,
             'feedingTypes' => $feedingTypes,
-            'feedingCards' => $feedingCards,
+            'feedingCards' => $this->buildFeedingCards(),
         ]);
     }
 
@@ -63,7 +61,11 @@ class FeedingController extends Controller
 
     public function listSchedules(): JsonResponse
     {
-        return response()->json($this->buildFeedingCards()->values());
+        return response()->json([
+            'ok' => true,
+            'message' => 'Feeding schedules retrieved successfully.',
+            'data' => $this->buildFeedingCards()->values(),
+        ]);
     }
 
     private function buildFeedingCards(): Collection

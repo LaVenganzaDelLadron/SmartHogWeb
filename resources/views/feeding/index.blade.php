@@ -21,18 +21,24 @@
         <main class="min-h-screen px-4 pb-10 pt-20 lg:ml-80 lg:px-8 lg:pt-8">
             <div id="feeding-page-content" class="mx-auto max-w-7xl space-y-6 transition duration-300 {{ request('modal') === 'add-feeding' ? 'blur-[2px] pointer-events-none select-none' : '' }}">
                 <section class="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-                    <div class="flex flex-wrap items-start justify-between gap-4">
+                    <div class="flex flex-wrap items-start gap-4">
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">SMART-HOG Module</p>
                             <h1 class="mt-2 text-2xl font-semibold text-slate-900 sm:text-3xl">Feeding Management</h1>
                             <p class="mt-2 max-w-3xl text-sm text-slate-600">Manage feeding schedules, monitor dispenser activity, and quickly act on delays to keep operations reliable and automated.</p>
                         </div>
-                        <a href="{{ route('show.feeding', ['modal' => 'add-feeding']) }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2">
-                            <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <path stroke-linecap="round" d="M10 4v12M4 10h12" />
-                            </svg>
-                            Add Feeding Schedule
-                        </a>
+                            <a href="{{ route('show.feeding', ['modal' => 'add-growth-stage']) }}" class="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2">
+                                <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 14.5h11M4.5 10h11M4.5 5.5h11" />
+                                </svg>
+                                Add Feeds
+                            </a>
+                            <a href="{{ route('show.feeding', ['modal' => 'add-feeding']) }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2">
+                                <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <path stroke-linecap="round" d="M10 4v12M4 10h12" />
+                                </svg>
+                                Add Schedule
+                            </a>
                     </div>
                 </section>
 

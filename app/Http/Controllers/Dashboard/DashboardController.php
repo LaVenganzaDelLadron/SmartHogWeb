@@ -40,9 +40,9 @@ class DashboardController extends Controller
     public function showPigManagement()
     {
         $pens = Pen::query()
-            ->select(['pen_code', 'pen_name'])
+            ->select(['pen_code', 'pen_name', 'capacity', 'status', 'notes', 'record_date'])
             ->whereNotNull('pen_code')
-            ->orderBy('pen_name')
+            ->orderByDesc('record_date')
             ->get();
         $growthStages = GrowthStage::query()
             ->select(['growth_id', 'growth_name'])
@@ -59,6 +59,7 @@ class DashboardController extends Controller
             'totalPigs' => $totalPigs,
             'activeBatches' => $activeBatches,
             'pigBatchCards' => $pigBatchCards,
+            'penCards' => $this->buildPenCards($pens),
         ]);
     }
 
@@ -146,6 +147,20 @@ class DashboardController extends Controller
                 'weight' => number_format((float) ($growthRecord?->avg_weight_kg ?? $batch->avg_weight_kg), 1).' kg',
                 'feeding' => $feedingStatus,
                 'alerts' => $healthAlert,
+            ];
+        });
+    }
+
+    private function buildPenCards(Collection $pens): Collection
+    {
+        return $pens->map(function (Pen $pen): array {
+            return [
+                'pen_id' => $pen->pen_code,
+                'pen_name' => $pen->pen_name,
+                'capacity' => (int) $pen->capacity,
+                'status' => ucfirst((string) $pen->status),
+                'notes' => $pen->notes ?: 'No notes',
+                'record_date' => Carbon::parse($pen->record_date)->format('Y-m-d H:i'),
             ];
         });
     }

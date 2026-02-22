@@ -16,7 +16,9 @@ class PigController extends Controller
         $validated = $request->validate([
             'batch_name' => 'required|string|max:255|unique:pig_batches,batch_name',
             'no_of_pigs' => 'required|integer|min:1',
+            'current_age_days' => 'required|integer|min:0',
             'avg_weight_kg' => 'required|numeric|min:0',
+            'growth_stage' => 'required|string|exists:growth_stages,growth_name',
             'notes' => 'nullable|string',
             'pen_id' => 'required|string|exists:pens,pen_code',
         ]);
@@ -86,20 +88,21 @@ class PigController extends Controller
     public function getPens()
     {
         $pens = Pen::all();
+
         return response()->json($pens);
     }
 
     public function getBatches()
     {
         $batches = PigBatch::all();
+
         return response()->json($batches);
     }
 
     public function getTotalPigs()
     {
         $totalPigs = PigBatch::sum('no_of_pigs');
+
         return response()->json(['total_pigs' => $totalPigs]);
     }
-
-
 }

@@ -132,6 +132,10 @@
                     </article>
                 </section>
 
+                <section>
+                    @include('pig.pen_card')
+                </section>
+
                 <section class="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
                     <p class="text-sm text-emerald-900"><span class="font-semibold">Short version:</span> The Pig Management interface enables users to register pig batches, monitor growth stages, record weight data, and track feeding and health information through a clean, card-based and user-friendly layout.</p>
                 </section>
