@@ -3,7 +3,7 @@ import {
     signInWithEmailAndPassword,
     updateProfile,
 } from 'firebase/auth';
-import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
 function setFormError(elementId, message) {
@@ -55,33 +55,6 @@ function isCredentialError(code, message) {
 
     const normalizedMessage = String(message || '').toLowerCase();
     return normalizedMessage.includes('invalid username or password') || normalizedMessage.includes('invalid email or password');
-}
-
-async function postLaravelAuth(form, payload) {
-    const response = await fetch(form.action, {
-        method: 'POST',
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN': payload._token || '',
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify(payload),
-    });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-        const message =
-            data?.message ||
-            data?.errors?.email?.[0] ||
-            data?.errors?.password?.[0] ||
-            'Authentication failed.';
-        throw new Error(message);
-    }
-
-    return data;
 }
 
 export async function signupUser({ name, email, password, confirmPassword }) {
@@ -142,17 +115,11 @@ function bindSignupForm() {
         try {
             const formData = new FormData(form);
             const payload = {
-                _token: String(formData.get('_token') || ''),
                 name: String(formData.get('name') || '').trim(),
                 email: String(formData.get('email') || '').trim(),
                 password: String(formData.get('password') || ''),
                 password_confirmation: String(formData.get('password_confirmation') || ''),
             };
-
-            if (!navigator.onLine) {
-                form.submit();
-                return;
-            }
 
             await signupUser({
                 name: payload.name,
@@ -160,8 +127,6 @@ function bindSignupForm() {
                 password: payload.password,
                 confirmPassword: payload.password_confirmation,
             });
-
-            await postLaravelAuth(form, payload);
 
             if (typeof window.showSuccessAlert === 'function') {
                 window.showSuccessAlert({
@@ -211,23 +176,14 @@ function bindLoginForm() {
         try {
             const formData = new FormData(form);
             const payload = {
-                _token: String(formData.get('_token') || ''),
                 email: String(formData.get('email') || '').trim(),
                 password: String(formData.get('password') || ''),
-                remember: formData.get('remember') ? 1 : 0,
             };
-
-            if (!navigator.onLine) {
-                form.submit();
-                return;
-            }
 
             await loginUser({
                 email: payload.email,
                 password: payload.password,
             });
-
-            await postLaravelAuth(form, payload);
 
             if (typeof window.showSuccessAlert === 'function') {
                 window.showSuccessAlert({

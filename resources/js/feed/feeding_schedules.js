@@ -17,6 +17,22 @@ const quantityStepButtons = document.querySelectorAll('[data-quantity-step]');
 const quickBatchButtons = document.querySelectorAll('[data-fill-batch-id]');
 const quickFeedingTypeButtons = document.querySelectorAll('[data-fill-feeding-type]');
 
+function buildFeedingId() {
+    return `FEED-${Date.now()}`;
+}
+
+function saveFrontendFeedingSchedule(payload) {
+    const storageKey = 'smart_hog_frontend_feeding_schedules';
+    const existing = JSON.parse(window.localStorage.getItem(storageKey) ?? '[]');
+    existing.push({
+        ...payload,
+        feeding_id: buildFeedingId(),
+        created_at: new Date().toISOString(),
+    });
+    window.localStorage.setItem(storageKey, JSON.stringify(existing));
+    return existing.at(-1);
+}
+
 function formatLocalDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -227,7 +243,6 @@ feedingScheduleForm?.addEventListener('submit', async (event) => {
     }
 
     const formData = new FormData(feedingScheduleForm);
-    const csrfToken = formData.get('_token');
     const payload = {
         batch_id: formData.get('feed_batch_id'),
         feeding_quantity_kg: formData.get('feed_quantity'),
@@ -237,48 +252,24 @@ feedingScheduleForm?.addEventListener('submit', async (event) => {
     };
 
     try {
-        const response = await fetch('/api/feeding/schedules/add', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-                'X-CSRF-TOKEN': typeof csrfToken === 'string' ? csrfToken : '',
-            },
-            body: JSON.stringify(payload),
+        const savedSchedule = saveFrontendFeedingSchedule(payload);
+        closeFeedingModal();
+
+        window.showSuccessAlert?.({
+            title: 'Saved Locally',
+            message: `Feeding schedule was saved on this device. ID: ${savedSchedule.feeding_id}`,
         });
 
-        const data = await response.json().catch(() => ({}));
-
-        if (response.ok) {
-            closeFeedingModal();
-
-            window.showSuccessAlert?.({
-                title: 'Saved Successfully',
-                message: data.feeding_id
-                    ? `${data.message ?? 'Feeding schedule was saved.'} ID: ${data.feeding_id}`
-                    : (data.message ?? 'Feeding schedule was saved.'),
-            });
-
-            feedingScheduleForm.reset();
-            if (feedBatchTarget) {
-                feedBatchTarget.textContent = 'Choose a batch to show exact pig count.';
-            }
-            setDefaultDate();
-            setDefaultTime();
-            return;
+        feedingScheduleForm.reset();
+        if (feedBatchTarget) {
+            feedBatchTarget.textContent = 'Choose a batch to show exact pig count.';
         }
-
-        const validationErrors = data.errors ? Object.values(data.errors).flat() : [];
-        const firstError = validationErrors.length > 0 ? String(validationErrors[0]) : null;
-
-        window.showWarningAlert?.({
-            title: 'Saving Failed',
-            message: firstError ?? data.message ?? 'Schedule was not saved. Please check your input and try again.',
-        });
+        setDefaultDate();
+        setDefaultTime();
     } catch (error) {
         window.showWarningAlert?.({
-            title: 'Connection Error',
-            message: 'Could not save feeding schedule right now. Please try again.',
+            title: 'Saving Failed',
+            message: 'Could not save feeding schedule in local storage. Please try again.',
         });
     }
 });

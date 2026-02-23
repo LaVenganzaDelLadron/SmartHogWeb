@@ -1,5 +1,21 @@
 const penForm = document.getElementById('pig-pen-form');
 
+function buildPenCode() {
+    return `PEN-${Date.now()}`;
+}
+
+function saveFrontendPen(payload) {
+    const storageKey = 'smart_hog_frontend_pens';
+    const existing = JSON.parse(window.localStorage.getItem(storageKey) ?? '[]');
+    existing.push({
+        ...payload,
+        pen_code: buildPenCode(),
+        created_at: new Date().toISOString(),
+    });
+    window.localStorage.setItem(storageKey, JSON.stringify(existing));
+    return existing.at(-1);
+}
+
 if (penForm instanceof HTMLFormElement) {
     penForm.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -13,66 +29,33 @@ if (penForm instanceof HTMLFormElement) {
         }
 
         const formData = new FormData(penForm);
-        const csrfToken = formData.get('_token');
         const payload = Object.fromEntries(formData.entries());
 
         try {
-            const response = await fetch('/api/pens/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-CSRF-TOKEN': typeof csrfToken === 'string' ? csrfToken : '',
-                },
-                body: JSON.stringify(payload),
+            const savedPen = saveFrontendPen(payload);
+
+            window.showSuccessAlert?.({
+                title: 'Saved Locally',
+                message: `Pen details were saved on this device. ID: ${savedPen.pen_code}`,
             });
 
-            const data = await response.json().catch(() => ({}));
+            penForm.reset();
 
-            if (response.ok) {
-                window.showSuccessAlert?.({
-                    title: 'Saved Successfully',
-                    message: data.pen_code
-                        ? `${data.message ?? 'Pen details were saved.'} ID: ${data.pen_code}`
-                        : (data.message ?? 'Pen details were saved.'),
-                });
+            const modal = document.getElementById('pig-pen-modal');
+            const pigPageContent = document.getElementById('pig-page-content');
+            modal?.classList.add('hidden');
+            modal?.setAttribute('aria-hidden', 'true');
+            pigPageContent?.classList.remove('blur-[2px]', 'pointer-events-none', 'select-none');
 
-                penForm.reset();
-
-                const modal = document.getElementById('pig-pen-modal');
-                const pigPageContent = document.getElementById('pig-page-content');
-                modal?.classList.add('hidden');
-                modal?.setAttribute('aria-hidden', 'true');
-                pigPageContent?.classList.remove('blur-[2px]', 'pointer-events-none', 'select-none');
-
-                const currentUrl = new URL(window.location.href);
-                if (currentUrl.searchParams.get('modal') === 'add-pen') {
-                    currentUrl.searchParams.delete('modal');
-                    window.history.replaceState({}, '', currentUrl.toString());
-                }
-
-                return;
+            const currentUrl = new URL(window.location.href);
+            if (currentUrl.searchParams.get('modal') === 'add-pen') {
+                currentUrl.searchParams.delete('modal');
+                window.history.replaceState({}, '', currentUrl.toString());
             }
-
-            if (response.status === 409) {
-                window.showWarningAlert?.({
-                    title: 'Duplicate Pen Name',
-                    message: data.message ?? 'Pen name already exists. Use a different name.',
-                });
-                return;
-            }
-
-            const validationErrors = data.errors ? Object.values(data.errors).flat() : [];
-            const firstError = validationErrors.length > 0 ? String(validationErrors[0]) : null;
-
-            window.showWarningAlert?.({
-                title: 'Saving Failed',
-                message: firstError ?? data.message ?? 'Data was not saved. Please check your input and try again.',
-            });
         } catch (error) {
             window.showWarningAlert?.({
-                title: 'Connection Error',
-                message: 'Could not save pen data right now. Please try again.',
+                title: 'Saving Failed',
+                message: 'Could not save pen data in local storage. Please try again.',
             });
         }
     });

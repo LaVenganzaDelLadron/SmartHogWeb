@@ -1,8 +1,12 @@
 const listElement = document.getElementById('notifications-list');
+const notificationsStorageKey = 'smart_hog_frontend_notifications';
 
-function getCsrfToken() {
-    const meta = document.querySelector('meta[name="csrf-token"]');
-    return meta?.getAttribute('content') ?? '';
+function readStoredNotifications() {
+    return JSON.parse(window.localStorage.getItem(notificationsStorageKey) ?? '[]');
+}
+
+function writeStoredNotifications(notifications) {
+    window.localStorage.setItem(notificationsStorageKey, JSON.stringify(notifications));
 }
 
 function toTitleCase(value) {
@@ -87,23 +91,25 @@ function buildNotificationCard(notification) {
     return article;
 }
 
-async function markNotificationAsRead(card) {
+function markNotificationAsRead(card) {
     const id = card.dataset.id;
     if (!id) {
         return;
     }
 
-    const response = await fetch(`/api/notifications/${id}/read`, {
-        method: 'PATCH',
-        headers: {
-            Accept: 'application/json',
-            'X-CSRF-TOKEN': getCsrfToken(),
-        },
+    const notifications = readStoredNotifications();
+    const updatedNotifications = notifications.map((notification) => {
+        if (String(notification.id) === id) {
+            return {
+                ...notification,
+                status: 'read',
+            };
+        }
+
+        return notification;
     });
 
-    if (!response.ok) {
-        return;
-    }
+    writeStoredNotifications(updatedNotifications);
 
     card.dataset.status = 'read';
     card.classList.remove('border-cyan-200', 'bg-cyan-50/40');
@@ -123,25 +129,28 @@ async function markNotificationAsRead(card) {
 }
 
 async function receiveNotification(payload) {
-    const response = await fetch('/api/notifications/receive', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-            'X-CSRF-TOKEN': getCsrfToken(),
-        },
-        body: JSON.stringify(payload),
-    });
+    const notification = {
+        id: `NTF-${Date.now()}`,
+        title: String(payload?.title ?? 'Notification'),
+        status: String(payload?.status ?? 'new'),
+        type: String(payload?.type ?? 'system'),
+        description: String(payload?.description ?? ''),
+        recorded_date: String(payload?.recorded_date ?? new Date().toISOString()),
+    };
 
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.notification || !listElement) {
-        return data;
+    const notifications = readStoredNotifications();
+    notifications.unshift(notification);
+    writeStoredNotifications(notifications);
+
+    if (listElement) {
+        const card = buildNotificationCard(notification);
+        listElement.prepend(card);
     }
 
-    const card = buildNotificationCard(data.notification);
-    listElement.prepend(card);
-
-    return data;
+    return {
+        ok: true,
+        notification,
+    };
 }
 
 function initNotificationActions() {
@@ -149,7 +158,15 @@ function initNotificationActions() {
         return;
     }
 
-    listElement.addEventListener('click', async (event) => {
+    const storedNotifications = readStoredNotifications();
+    if (storedNotifications.length > 0) {
+        listElement.innerHTML = '';
+        storedNotifications.forEach((notification) => {
+            listElement.append(buildNotificationCard(notification));
+        });
+    }
+
+    listElement.addEventListener('click', (event) => {
         const target = event.target;
         if (!(target instanceof HTMLElement) || !target.classList.contains('ack-btn')) {
             return;
@@ -160,17 +177,17 @@ function initNotificationActions() {
             return;
         }
 
-        await markNotificationAsRead(card);
+        markNotificationAsRead(card);
     });
 
     const markAllButton = document.getElementById('mark-all-read');
-    markAllButton?.addEventListener('click', async () => {
+    markAllButton?.addEventListener('click', () => {
         const cards = Array.from(listElement.querySelectorAll('.notification-item'));
-        for (const card of cards) {
+        cards.forEach((card) => {
             if (card instanceof HTMLElement && card.dataset.status === 'new') {
-                await markNotificationAsRead(card);
+                markNotificationAsRead(card);
             }
-        }
+        });
     });
 }
 

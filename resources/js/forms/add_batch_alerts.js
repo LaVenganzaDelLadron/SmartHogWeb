@@ -1,5 +1,21 @@
 const homeBatchForm = document.getElementById('add-batch-form');
 
+function buildBatchId() {
+    return `BATCH-${Date.now()}`;
+}
+
+function saveFrontendBatch(payload) {
+    const storageKey = 'smart_hog_frontend_batches';
+    const existing = JSON.parse(window.localStorage.getItem(storageKey) ?? '[]');
+    existing.push({
+        ...payload,
+        batch_id: buildBatchId(),
+        created_at: new Date().toISOString(),
+    });
+    window.localStorage.setItem(storageKey, JSON.stringify(existing));
+    return existing.at(-1);
+}
+
 if (homeBatchForm instanceof HTMLFormElement) {
     const growthStageInput = homeBatchForm.querySelector('#batch-stage');
     const presetButtons = homeBatchForm.querySelectorAll('[data-fill-batch-stage]');
@@ -26,7 +42,6 @@ if (homeBatchForm instanceof HTMLFormElement) {
         }
 
         const formData = new FormData(homeBatchForm);
-        const csrfToken = formData.get('_token');
         const payload = {
             batch_name: formData.get('batch_name'),
             no_of_pigs: formData.get('pig_count'),
@@ -38,54 +53,30 @@ if (homeBatchForm instanceof HTMLFormElement) {
         };
 
         try {
-            const response = await fetch('/api/batches/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-CSRF-TOKEN': typeof csrfToken === 'string' ? csrfToken : '',
-                },
-                body: JSON.stringify(payload),
+            const savedBatch = saveFrontendBatch(payload);
+
+            window.showSuccessAlert?.({
+                title: 'Saved Locally',
+                message: `Batch details were saved on this device. ID: ${savedBatch.batch_id}`,
             });
 
-            const data = await response.json().catch(() => ({}));
+            homeBatchForm.reset();
 
-            if (response.ok) {
-                window.showSuccessAlert?.({
-                    title: 'Saved Successfully',
-                    message: data.batch_id
-                        ? `${data.message ?? 'Batch details were saved.'} ID: ${data.batch_id}`
-                        : (data.message ?? 'Batch details were saved.'),
-                });
+            const modal = document.getElementById('add-batch-modal');
+            const homePageContent = document.getElementById('home-page-content');
+            modal?.classList.add('hidden');
+            modal?.setAttribute('aria-hidden', 'true');
+            homePageContent?.classList.remove('blur-[2px]', 'pointer-events-none', 'select-none');
 
-                homeBatchForm.reset();
-
-                const modal = document.getElementById('add-batch-modal');
-                const homePageContent = document.getElementById('home-page-content');
-                modal?.classList.add('hidden');
-                modal?.setAttribute('aria-hidden', 'true');
-                homePageContent?.classList.remove('blur-[2px]', 'pointer-events-none', 'select-none');
-
-                const currentUrl = new URL(window.location.href);
-                if (currentUrl.searchParams.get('modal') === 'add-batch') {
-                    currentUrl.searchParams.delete('modal');
-                    window.history.replaceState({}, '', currentUrl.toString());
-                }
-
-                return;
+            const currentUrl = new URL(window.location.href);
+            if (currentUrl.searchParams.get('modal') === 'add-batch') {
+                currentUrl.searchParams.delete('modal');
+                window.history.replaceState({}, '', currentUrl.toString());
             }
-
-            const validationErrors = data.errors ? Object.values(data.errors).flat() : [];
-            const firstError = validationErrors.length > 0 ? String(validationErrors[0]) : null;
-
-            window.showWarningAlert?.({
-                title: 'Saving Failed',
-                message: firstError ?? data.message ?? 'Data was not saved. Please check your input and try again.',
-            });
         } catch (error) {
             window.showWarningAlert?.({
-                title: 'Connection Error',
-                message: 'Could not save batch data right now. Please try again.',
+                title: 'Saving Failed',
+                message: 'Could not save batch data in local storage. Please try again.',
             });
         }
     });

@@ -14,12 +14,9 @@ Route::get('/', function () {
 Route::get('/login', [AuthController::class, 'showLogin'])->name('show.login');
 Route::get('/signup', [AuthController::class, 'showSignup'])->name('show.signup');
 
-// Protected Routes
-Route::middleware('auth.custom')->group(function () {
-    Route::get('/home', [DashboardController::class, 'showDashboard'])->name('show.dashboard');
-    Route::get('/pig', [DashboardController::class, 'showPigManagement'])->name('show.pig');
-    Route::get('/feeding', [FeedingController::class, 'showFeedingManagement'])->name('show.feeding');
-    Route::get('/monitor', [DashboardController::class, 'showMonitorManagement'])->name('show.monitor');
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('show.notifications');
-    Route::get('/reports', [DashboardController::class, 'showReports'])->name('reports.index');
-});
+Route::get('/home', [DashboardController::class, 'showDashboard'])->name('show.dashboard');
+Route::get('/pig', [DashboardController::class, 'showPigManagement'])->name('show.pig');
+Route::get('/feeding', [FeedingController::class, 'showFeedingManagement'])->name('show.feeding');
+Route::get('/monitor', [DashboardController::class, 'showMonitorManagement'])->name('show.monitor');
+Route::get('/notifications', [NotificationController::class, 'index'])->name('show.notifications');
+Route::get('/reports', [DashboardController::class, 'showReports'])->name('reports.index');

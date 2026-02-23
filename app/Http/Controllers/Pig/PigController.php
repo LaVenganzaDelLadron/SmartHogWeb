@@ -3,106 +3,40 @@
 namespace App\Http\Controllers\Pig;
 
 use App\Http\Controllers\Controller;
-use App\Models\Pen;
-use App\Models\PigBatch;
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Http\JsonResponse;
 
 class PigController extends Controller
 {
-    // adding data
-    public function addBatch(Request $request)
+    public function addBatch(): JsonResponse
     {
-        $validated = $request->validate([
-            'batch_name' => 'required|string|max:255|unique:pig_batches,batch_name',
-            'no_of_pigs' => 'required|integer|min:1',
-            'current_age_days' => 'required|integer|min:0',
-            'avg_weight_kg' => 'required|numeric|min:0',
-            'growth_stage' => 'required|string|exists:growth_stages,growth_name',
-            'notes' => 'nullable|string',
-            'pen_id' => 'required|string|exists:pens,pen_code',
+        return response()->json([
+            'ok' => true,
+            'message' => 'Frontend-only batch accepted.',
+            'batch_id' => 'BATCH-'.strtoupper(substr(sha1((string) now()), 0, 8)),
         ]);
-
-        $selectedPen = Pen::query()
-            ->where('pen_code', $validated['pen_id'])
-            ->first();
-
-        $currentPenLoad = PigBatch::query()
-            ->where('pen_id', $validated['pen_id'])
-            ->sum('no_of_pigs');
-
-        $projectedPenLoad = $currentPenLoad + (int) $validated['no_of_pigs'];
-        $penCapacity = (int) ($selectedPen?->capacity ?? 0);
-
-        if ($projectedPenLoad > $penCapacity) {
-            throw ValidationException::withMessages([
-                'pen_id' => sprintf(
-                    'Pen capacity exceeded. %s capacity is %d pigs. Current load is %d, adding %d would make it %d.',
-                    $validated['pen_id'],
-                    $penCapacity,
-                    $currentPenLoad,
-                    (int) $validated['no_of_pigs'],
-                    $projectedPenLoad
-                ),
-            ]);
-        }
-
-        $batch = PigBatch::create($validated);
-
-        if ($request->expectsJson()) {
-            return response()->json([
-                'ok' => true,
-                'message' => 'Batch added successfully.',
-                'batch_id' => $batch->batch_id,
-            ]);
-        }
-
-        return redirect()
-            ->route('show.pig')
-            ->with('success', 'Batch added successfully.');
     }
 
-    public function addPen(Request $request)
+    public function addPen(): JsonResponse
     {
-        $validated = $request->validate([
-            'pen_name' => 'required|string|max:255',
-            'capacity' => 'required|integer',
-            'status' => 'string|in:available,occupied,maintenance',
-            'notes' => 'nullable|string',
+        return response()->json([
+            'ok' => true,
+            'message' => 'Frontend-only pen accepted.',
+            'pen_code' => 'PEN-'.strtoupper(substr(sha1((string) now()), 0, 8)),
         ]);
-
-        Pen::create($validated);
-        if ($request->expectsJson()) {
-            return response()->json([
-                'ok' => true,
-                'message' => 'Pen added successfully.',
-            ]);
-        }
-
-        return redirect()
-            ->route('show.pig')
-            ->with('success', 'Pen added successfully.');
     }
 
-    // getting data
-    public function getPens()
+    public function getPens(): JsonResponse
     {
-        $pens = Pen::all();
-
-        return response()->json($pens);
+        return response()->json([]);
     }
 
-    public function getBatches()
+    public function getBatches(): JsonResponse
     {
-        $batches = PigBatch::all();
-
-        return response()->json($batches);
+        return response()->json([]);
     }
 
-    public function getTotalPigs()
+    public function getTotalPigs(): JsonResponse
     {
-        $totalPigs = PigBatch::sum('no_of_pigs');
-
-        return response()->json(['total_pigs' => $totalPigs]);
+        return response()->json(['total_pigs' => 0]);
     }
 }
