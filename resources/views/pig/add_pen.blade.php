@@ -22,7 +22,7 @@
 
             <div id="pen-form-feedback" class="mt-4 hidden rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800"></div>
 
-            <form id="pig-pen-form" method="POST" action="{{ route('pens.add') }}" class="mt-6 space-y-4">
+            <form id="pig-pen-form" method="POST" action="{{ route('web.pens.add') }}" class="mt-6 space-y-4">
                 @csrf
                 
                 <section class="rounded-2xl border border-slate-200 bg-slate-50/60 p-3">

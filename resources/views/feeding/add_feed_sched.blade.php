@@ -21,7 +21,7 @@
 
             <div id="feed-form-feedback" class="mt-4 hidden rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800"></div>
 
-            <form id="feeding-schedule-form" class="mt-4 space-y-4">
+            <form id="feeding-schedule-form" method="POST" action="{{ route('web.feeding.schedules.add') }}" class="mt-4 space-y-4">
                 @csrf
                 <div>
                     <label for="feed-batch-id" class="mb-1.5 block text-sm font-medium text-slate-700">Batch ID <span class="text-rose-600">*</span></label>
