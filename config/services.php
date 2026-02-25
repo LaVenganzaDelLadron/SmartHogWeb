@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'shapi_auth' => [
+        'base_url' => env('SHAPI_AUTH_BASE_URL', 'http://shapi-qq0p.onrender.com'),
+    ],
+
 ];

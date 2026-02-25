@@ -33,7 +33,7 @@
                     <div id="signupError" class="hidden rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"></div>
 
                     <div>
-                        <label for="name" class="mb-2 block text-sm font-medium text-slate-700">Full Name</label>
+                        <label for="name" class="mb-2 block text-sm font-medium text-slate-700">Username</label>
                         <input
                             id="name"
                             name="name"
