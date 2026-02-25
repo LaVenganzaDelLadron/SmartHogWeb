@@ -3,7 +3,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Feeding\FeedingController;
 use App\Http\Controllers\Notification\NotificationController;
-use App\Http\Controllers\Pig\PenController;
+use App\Http\Controllers\Pen\PenController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

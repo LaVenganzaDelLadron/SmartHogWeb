@@ -17,12 +17,12 @@ class PenRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'pen_code' => ['required', 'string', 'max:20', 'regex:/^[A-Za-z0-9-]+$/'],
+            'pen_code' => ['nullable', 'string', 'max:20', 'regex:/^[A-Za-z0-9-]+$/'],
             'pen_name' => ['required', 'string', 'max:255'],
             'capacity' => ['required', 'integer', 'min:1'],
-            'status' => ['required', 'string', 'in:available,occupied,maintenance'],
+            'status' => ['nullable', 'string', 'in:available,occupied,maintenance'],
             'notes' => ['nullable', 'string', 'max:1000'],
-            'date' => ['required', 'date'],
+            'date' => ['nullable', 'date'],
         ];
     }
 
@@ -32,14 +32,11 @@ class PenRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'pen_code.required' => 'Pen code is required.',
             'pen_name.required' => 'Pen name is required.',
             'capacity.required' => 'Capacity is required.',
             'capacity.integer' => 'Capacity must be a whole number.',
             'capacity.min' => 'Capacity must be at least 1.',
-            'status.required' => 'Status is required.',
             'status.in' => 'Status must be available, occupied, or maintenance.',
-            'date.required' => 'Date is required.',
             'date.date' => 'Date must be a valid date.',
         ];
     }

@@ -4,7 +4,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Feeding\FeedingController;
 use App\Http\Controllers\Notification\NotificationController;
-use App\Http\Controllers\Pig\PenController;
+use App\Http\Controllers\Pen\PenController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {

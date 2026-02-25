@@ -1,25 +1,25 @@
 <?php
 
-namespace App\Http\Controllers\Pig;
+namespace App\Http\Controllers\Pen;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Pen\PenRequest;
 use App\Models\Pen;
-use App\Models\PigBatch;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Validation\ValidationException;
 
 class PenController extends Controller
 {
-
     public function addPen(PenRequest $request): JsonResponse|RedirectResponse
     {
         $validated = $request->validated();
+        $penCode = isset($validated['pen_code']) && is_string($validated['pen_code']) && trim($validated['pen_code']) !== ''
+            ? trim($validated['pen_code'])
+            : $this->generateNextPenCode();
         $status = 'available';
         $notes = trim((string) ($validated['notes'] ?? ''));
         $recordDate = isset($validated['date'])
@@ -32,6 +32,7 @@ class PenController extends Controller
                 ->timeout(15)
                 ->connectTimeout(5)
                 ->post($this->endpointUrl('/pen/add/'), [
+                    'pen_code' => $penCode,
                     'pen_name' => $validated['pen_name'],
                     'capacity' => (int) $validated['capacity'],
                     'status' => $status,
@@ -51,12 +52,12 @@ class PenController extends Controller
         }
 
         $payload = $response->json();
-        $penCode = (string) ($payload['pen_code'] ?? '');
+        $returnedPenCode = (string) ($payload['pen_code'] ?? $penCode);
         $penName = (string) ($payload['pen_name'] ?? $validated['pen_name']);
 
-        if ($penCode !== '') {
+        if ($returnedPenCode !== '') {
             Pen::query()->updateOrCreate(
-                ['pen_code' => $penCode],
+                ['pen_code' => $returnedPenCode],
                 [
                     'pen_name' => $penName,
                     'capacity' => (int) $validated['capacity'],
@@ -70,7 +71,7 @@ class PenController extends Controller
             return response()->json([
                 'ok' => true,
                 'message' => $this->extractMessage($payload, 'Pen Successfully Created'),
-                'pen_code' => $penCode,
+                'pen_code' => $returnedPenCode,
                 'pen_name' => $penName,
             ], $response->status());
         }
@@ -97,6 +98,26 @@ class PenController extends Controller
         $normalizedPath = '/'.ltrim($path, '/');
 
         return $baseUrl.$normalizedPath;
+    }
+
+    private function generateNextPenCode(): string
+    {
+        $codes = Pen::query()
+            ->whereNotNull('pen_code')
+            ->pluck('pen_code');
+
+        $max = 0;
+        foreach ($codes as $code) {
+            if (! is_string($code)) {
+                continue;
+            }
+
+            if (preg_match('/^PEN-?(\d+)$/i', $code, $matches) === 1) {
+                $max = max($max, (int) $matches[1]);
+            }
+        }
+
+        return sprintf('PEN%03d', $max + 1);
     }
 
     private function extractMessage(mixed $payload, string $fallback): string
