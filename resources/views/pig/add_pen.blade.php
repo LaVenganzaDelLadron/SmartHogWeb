@@ -42,7 +42,7 @@
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label for="pen-capacity" class="mb-2 block text-sm font-medium text-slate-700">Capacity (Pigs)</label>
-                        <input id="pen-capacity" name="capacity" type="number" min="1" placeholder="e.g. 30" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+                        <input id="pen-capacity" name="capacity" type="number" min="1" step="1" placeholder="e.g. 30" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200">
                     </div>
                 </div>
 

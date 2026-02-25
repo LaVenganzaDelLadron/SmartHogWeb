@@ -4,7 +4,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Feeding\FeedingController;
 use App\Http\Controllers\Notification\NotificationController;
-use App\Http\Controllers\Pig\PigController;
+use App\Http\Controllers\Pig\PenController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -22,6 +22,6 @@ Route::get('/monitor', [DashboardController::class, 'showMonitorManagement'])->n
 Route::get('/notifications', [NotificationController::class, 'index'])->name('show.notifications');
 Route::get('/reports', [DashboardController::class, 'showReports'])->name('reports.index');
 
-Route::post('/pig/pens/add', [PigController::class, 'addPenFromWeb'])->name('web.pens.add');
-Route::post('/pig/batches/add', [PigController::class, 'addBatchFromWeb'])->name('web.batches.add');
+Route::post('/pig/pens/add', [PenController::class, 'addPenFromWeb'])->name('web.pens.add');
+Route::post('/pig/batches/add', [PenController::class, 'addBatchFromWeb'])->name('web.batches.add');
 Route::post('/feeding/schedules/add', [FeedingController::class, 'addScheduleFromWeb'])->name('web.feeding.schedules.add');

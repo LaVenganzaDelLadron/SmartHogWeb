@@ -1,6 +1,8 @@
 import {
     createUserWithEmailAndPassword,
+    deleteUser,
     signInWithEmailAndPassword,
+    signOut,
     updateProfile,
 } from 'firebase/auth';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
@@ -57,6 +59,67 @@ function isCredentialError(code, message) {
     return normalizedMessage.includes('invalid username or password') || normalizedMessage.includes('invalid email or password');
 }
 
+function normalizeApiError(payload, fallbackMessage) {
+    if (!payload || typeof payload !== 'object') {
+        return fallbackMessage;
+    }
+
+    if (typeof payload.message === 'string' && payload.message.trim()) {
+        return payload.message.trim();
+    }
+
+    const firstKey = Object.keys(payload)[0];
+    const firstValue = firstKey ? payload[firstKey] : null;
+
+    if (Array.isArray(firstValue) && firstValue[0]) {
+        return String(firstValue[0]);
+    }
+
+    if (typeof firstValue === 'string' && firstValue.trim()) {
+        return firstValue.trim();
+    }
+
+    return fallbackMessage;
+}
+
+function getCsrfToken() {
+    const metaToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    if (metaToken) {
+        return metaToken;
+    }
+
+    const inputToken = document.querySelector('input[name="_token"]')?.value;
+    return inputToken || '';
+}
+
+async function callLaravelAuth(endpoint, payload, fallbackMessage) {
+    const csrfToken = getCsrfToken();
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': csrfToken,
+        },
+        body: JSON.stringify(payload),
+    });
+
+    let data = null;
+    try {
+        data = await response.json();
+    } catch {
+        data = null;
+    }
+
+    if (!response.ok) {
+        throw new Error(normalizeApiError(data, fallbackMessage));
+    }
+
+    return data;
+}
+
 export async function signupUser({ name, email, password, confirmPassword }) {
     if (!name || !email || !password || !confirmPassword) {
         throw new Error('Please complete all fields.');
@@ -66,21 +129,47 @@ export async function signupUser({ name, email, password, confirmPassword }) {
         throw new Error('Password confirmation does not match.');
     }
 
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    const firebaseSignupPromise = (async () => {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
-    await updateProfile(user, { displayName: name });
+        await updateProfile(user, { displayName: name });
 
-    await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
+        await setDoc(doc(db, 'users', user.uid), {
+            uid: user.uid,
+            name,
+            email,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            source: 'web-signup',
+        });
+
+        return user;
+    })();
+
+    const apiSignupPromise = callLaravelAuth('/api/signup', {
         name,
         email,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        source: 'web-signup',
-    });
+        password,
+        password_confirmation: confirmPassword,
+    }, 'Signup failed. Please try again.');
 
-    return user;
+    const [firebaseResult, apiResult] = await Promise.allSettled([firebaseSignupPromise, apiSignupPromise]);
+
+    if (firebaseResult.status === 'fulfilled' && apiResult.status === 'fulfilled') {
+        return firebaseResult.value;
+    }
+
+    if (firebaseResult.status === 'fulfilled' && apiResult.status === 'rejected') {
+        await deleteUser(firebaseResult.value).catch(() => {});
+        throw apiResult.reason;
+    }
+
+    if (firebaseResult.status === 'rejected') {
+        throw firebaseResult.reason;
+    }
+
+    throw new Error('Signup failed. Please try again.');
 }
 
 export async function loginUser({ email, password }) {
@@ -88,8 +177,28 @@ export async function loginUser({ email, password }) {
         throw new Error('Please enter both email and password.');
     }
 
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
+    const firebaseLoginPromise = signInWithEmailAndPassword(auth, email, password);
+    const apiLoginPromise = callLaravelAuth('/api/login', {
+        email,
+        password,
+    }, 'Invalid email or password.');
+
+    const [firebaseResult, apiResult] = await Promise.allSettled([firebaseLoginPromise, apiLoginPromise]);
+
+    if (firebaseResult.status === 'fulfilled' && apiResult.status === 'fulfilled') {
+        return firebaseResult.value.user;
+    }
+
+    if (firebaseResult.status === 'fulfilled' && apiResult.status === 'rejected') {
+        await signOut(auth).catch(() => {});
+        throw apiResult.reason;
+    }
+
+    if (firebaseResult.status === 'rejected') {
+        throw firebaseResult.reason;
+    }
+
+    throw new Error('Login failed. Please try again.');
 }
 
 function bindSignupForm() {
