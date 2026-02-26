@@ -98,6 +98,6 @@ To contribute to the Pig Farm Management System, please follow these steps:
 5. Create a pull request to merge the changes into the main branch.
 
 ## 📬 Contact
-For any questions or concerns, please contact us at [darkglitch5417@gmail.com]
+For any questions or concerns, please contact us at darkglitch5417@gmail.com
 
 ## 💖 Thanks
