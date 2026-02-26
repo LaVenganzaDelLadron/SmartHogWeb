@@ -16,10 +16,19 @@
         @endif
     </head>
     <body class="min-h-screen bg-[radial-gradient(70rem_44rem_at_0%_-10%,rgba(16,185,129,0.12),transparent),radial-gradient(60rem_38rem_at_100%_0%,rgba(20,83,45,0.1),transparent),#f3f7f2] text-slate-800 antialiased">
+        @php
+            $penRequestFailed = $errors->has('pen') || $errors->has('pen_name') || $errors->has('capacity') || $errors->has('notes') || $errors->has('date');
+            $penFailureMessage = $errors->first('pen')
+                ?: $errors->first('pen_name')
+                ?: $errors->first('capacity')
+                ?: $errors->first('notes')
+                ?: $errors->first('date');
+        @endphp
+
         @include('layouts.sidebar', ['deviceOnline' => true])
 
         <main class="min-h-screen px-4 pb-10 pt-20 lg:ml-80 lg:px-8 lg:pt-8">
-            <div id="pig-page-content" class="mx-auto max-w-7xl space-y-6 transition duration-300 {{ in_array(request('modal'), ['add-pen', 'add-pig'], true) ? 'blur-[2px] pointer-events-none select-none' : '' }}">
+            <div id="pig-page-content" class="mx-auto max-w-7xl space-y-6 transition duration-300 {{ in_array(request('modal'), ['add-pen', 'add-pig', 'edit-pen', 'delete-pen'], true) ? 'blur-[2px] pointer-events-none select-none' : '' }}">
                 <section class="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>
@@ -144,5 +153,32 @@
 
         @include('pig.add_pen')
         @include('pig.add_pig')
+        @include('pig.update_pen')
+        @include('pig.delete_pen')
+
+        @if (session('success') || $penRequestFailed)
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const successMessage = @js(session('success'));
+                    const failureMessage = @js($penFailureMessage);
+
+                    if (successMessage && typeof window.showSuccessAlert === 'function') {
+                        window.showSuccessAlert({
+                            title: 'Request Successful',
+                            message: successMessage,
+                            durationMs: 3200,
+                        });
+                    }
+
+                    if (failureMessage && typeof window.showWarningAlert === 'function') {
+                        window.showWarningAlert({
+                            title: 'Request Failed',
+                            message: failureMessage,
+                            durationMs: 3600,
+                        });
+                    }
+                });
+            </script>
+        @endif
     </body>
 </html>

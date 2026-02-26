@@ -11,7 +11,9 @@ use App\Models\PigBatch;
 use App\Models\PigGrowthRecord;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 
 class DashboardController extends Controller
 {
@@ -41,6 +43,8 @@ class DashboardController extends Controller
 
     public function showPigManagement(): View
     {
+        $this->syncPensFromGateway();
+
         $pens = Pen::query()
             ->select(['pen_code', 'pen_name', 'capacity', 'status', 'notes', 'record_date'])
             ->whereNotNull('pen_code')
@@ -203,5 +207,64 @@ class DashboardController extends Controller
         }
 
         return implode(' · ', $alerts);
+    }
+
+    private function syncPensFromGateway(): void
+    {
+        try {
+            $response = Http::acceptJson()
+                ->timeout(15)
+                ->connectTimeout(5)
+                ->get($this->endpointUrl('/pen/all/'));
+        } catch (ConnectionException) {
+            return;
+        }
+
+        if (! $response->successful()) {
+            return;
+        }
+
+        $payload = $response->json();
+        if (! is_array($payload) || ! isset($payload['data']) || ! is_array($payload['data'])) {
+            return;
+        }
+
+        $syncedPenCodes = [];
+        foreach ($payload['data'] as $pen) {
+            if (! is_array($pen) || ! isset($pen['pen_code']) || ! is_string($pen['pen_code'])) {
+                continue;
+            }
+
+            $penCode = strtoupper(str_replace('-', '', trim($pen['pen_code'])));
+            if ($penCode === '') {
+                continue;
+            }
+
+            $syncedPenCodes[] = $penCode;
+
+            Pen::query()->updateOrCreate(
+                ['pen_code' => $penCode],
+                [
+                    'pen_name' => (string) ($pen['pen_name'] ?? 'Unnamed Pen'),
+                    'capacity' => (int) ($pen['capacity'] ?? 0),
+                    'status' => (string) ($pen['status'] ?? 'available'),
+                    'notes' => isset($pen['notes']) ? (string) $pen['notes'] : null,
+                    'record_date' => $pen['date'] ?? now()->toDateTimeString(),
+                ]
+            );
+        }
+
+        $syncedPenCodes = array_values(array_unique(array_filter($syncedPenCodes)));
+        if (count($syncedPenCodes) > 0) {
+            Pen::query()->whereNotIn('pen_code', $syncedPenCodes)->delete();
+        }
+    }
+
+    private function endpointUrl(string $path): string
+    {
+        $baseUrl = rtrim((string) config('services.shapi_auth.base_url', 'http://shapi-qq0p.onrender.com'), '/');
+        $normalizedPath = '/'.ltrim($path, '/');
+
+        return $baseUrl.$normalizedPath;
     }
 }
