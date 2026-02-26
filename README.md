@@ -13,18 +13,14 @@ The Pig Farm Management System is a comprehensive web application designed to ma
 - **Frontend**: Php
 - **Backend**: Python
 - **Database**:  Postgresql
-- **API**: Laravel API
-- **Authentication**: Laravel Sanctum
-- **Queue System**: Laravel Queue
-- **Logging**: Laravel Logging
+- **Framework**: Laravel
 
 ## 📦 Installation
 To install the Pig Farm Management System, follow these steps:
 1. Clone the repository using `git clone`.
 2. Run `composer install` to install the dependencies.
 3. Run `php artisan migrate` to create the database tables.
-4. Run `php artisan db:seed` to seed the database with initial data.
-5. Run `php artisan serve` to start the development server.
+4. Run `php artisan serve` to start the development server.
 
 ## 💻 Usage
 To use the Pig Farm Management System, follow these steps:
