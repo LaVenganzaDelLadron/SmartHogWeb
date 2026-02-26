@@ -1,59 +1,103 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🧠 Pig Farm Management System
+The Pig Farm Management System is a comprehensive web application designed to manage and track various aspects of a pig farm, including pig batches, growth stages, feeding schedules, and notifications. The system aims to provide a user-friendly and efficient way to monitor and control the daily operations of a pig farm, ensuring optimal productivity and profitability.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 🚀 Features
+- **Pig Batch Management**: Create, edit, and delete pig batches, including attributes such as batch ID, name, number of pigs, and growth stage.
+- **Growth Stage Management**: Define and manage growth stages for pig batches, including attributes such as growth stage name and description.
+- **Feeding Schedule Management**: Create and manage feeding schedules for pig batches, including attributes such as feeding time, quantity, and type of feed.
+- **Notification System**: Receive notifications for important events, such as feeding times, pig batch creation, and growth stage changes.
+- **User Management**: Manage user accounts, including attributes such as name, email, and password.
+- **API Endpoints**: Utilize API endpoints for authentication, pig batch management, growth stage management, feeding schedule management, and notification management.
 
-## About Laravel
+## 🛠️ Tech Stack
+- **Frontend**: Php
+- **Backend**: Python
+- **Database**:  Postgresql
+- **API**: Laravel API
+- **Authentication**: Laravel Sanctum
+- **Queue System**: Laravel Queue
+- **Logging**: Laravel Logging
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📦 Installation
+To install the Pig Farm Management System, follow these steps:
+1. Clone the repository using `git clone`.
+2. Run `composer install` to install the dependencies.
+3. Run `php artisan migrate` to create the database tables.
+4. Run `php artisan db:seed` to seed the database with initial data.
+5. Run `php artisan serve` to start the development server.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 💻 Usage
+To use the Pig Farm Management System, follow these steps:
+1. Access the application through the web interface or API endpoints.
+2. Create a user account and log in to the system.
+3. Create and manage pig batches, growth stages, feeding schedules, and notifications.
+4. Utilize the API endpoints for authentication, pig batch management, growth stage management, feeding schedule management, and notification management.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 📂 Project Structure
+```markdown
+app
+├── Console
+├── Exceptions
+├── Http
+│   ├── Controllers
+│   ├── Kernel.php
+│   ├── Middleware
+│   └── Requests
+├── Models
+│   ├── Pen.php
+│   ├── GrowthStage.php
+│   ├── PigBatch.php
+│   ├── User.php
+│   └── Notification.php
+├── Providers
+│   ├── AppServiceProvider.php
+│   └── RouteServiceProvider.php
+├── Services
+└── bootstrap
+    ├── app.php
+    └── providers.php
+config
+├── app.php
+├── auth.php
+├── broadcast.php
+├── cache.php
+├── database.php
+├── filesystems.php
+├── logging.php
+├── mail.php
+├── queue.php
+├── services.php
+└── session.php
+database
+├── migrations
+└── seeds
+public
+├── index.php
+└── webpack.mix.js
+resources
+├── js
+└── sass
+routes
+├── api.php
+└── web.php
+tests
+├── Feature
+├── Unit
+└── ExampleTest.php
+vendor
+└── composer
+```
 
-## Learning Laravel
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## 🤝 Contributing
+To contribute to the Pig Farm Management System, please follow these steps:
+1. Fork the repository using `git fork`.
+2. Create a new branch using `git branch`.
+3. Make changes to the code and commit them using `git commit`.
+4. Push the changes to the remote repository using `git push`.
+5. Create a pull request to merge the changes into the main branch.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 📬 Contact
+For any questions or concerns, please contact us at [darkglitch5417@example.com](mailto:support@example.com).
 
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 💖 Thanks
