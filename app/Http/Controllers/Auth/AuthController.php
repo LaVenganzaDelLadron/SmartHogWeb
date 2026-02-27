@@ -98,16 +98,35 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse|RedirectResponse
     {
+        try {
+            $response = Http::acceptJson()
+                ->asJson()
+                ->timeout(15)
+                ->connectTimeout(5)
+                ->post($this->endpointUrl('/auth/logout/'), [
+                ]);
+        } catch (ConnectionException) {
+            return $this->handleGatewayFailure($request, 'Logout service is currently unavailable. Please try again.');
+        }
+
+        if (! $response->successful()) {
+            return $this->handleApiFailure($request, $response->status(), $response->json(), 'Logout failed. Please try again.');
+        }
+
+        $payload = $response->json();
+        $message = $this->extractMessage($payload, 'Logout Successfully');
+
         if ($request->expectsJson()) {
             return response()->json([
                 'ok' => true,
-                'message' => 'Frontend-only logout accepted.',
-            ]);
+                'message' => $message,
+                'data' => $payload,
+            ], $response->status());
         }
 
         return redirect()
             ->route('show.login')
-            ->with('success', 'Frontend-only logout accepted.');
+            ->with('success', $message);
     }
 
     private function endpointUrl(string $path): string
