@@ -91,7 +91,7 @@
                 </section>
 
                 <section class="grid gap-6 xl:grid-cols-3">
-                    @include('pig.pig_cards')
+                    @include('pig.pig_card')
 
                     <article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
                         <div class="flex items-center justify-between gap-3">
