@@ -23,8 +23,12 @@ class AddGrowthController extends Controller
             ? trim($validated['growth_code'])
             : $this->generateNextGrowthCode();
         $recordDate = isset($validated['date'])
-            ? Carbon::parse($validated['date'])->toIso8601String()
-            : now()->toIso8601String();
+            ? Carbon::parse($validated['date'])->toDateTimeString()
+            : now()->toDateTimeString();
+        $returnedGrowthCode = $growthCode;
+        $growthName = (string) $validated['growth_name'];
+        $message = 'Growth stage saved successfully.';
+        $apiSynced = false;
 
         try {
             $response = Http::acceptJson()
@@ -34,27 +38,42 @@ class AddGrowthController extends Controller
                 ->post($this->endpointUrl('/growth/add/'), [
                     'growth_code' => $growthCode,
                     'growth_name' => $validated['growth_name'],
-                    'date' => $recordDate,
+                    'date' => Carbon::parse($recordDate)->toIso8601String(),
                 ]);
+
+            if ($response->successful()) {
+                $payload = $response->json();
+                $remoteGrowthCode = $payload['growth_code'] ?? null;
+                $remoteGrowthName = $payload['growth_name'] ?? null;
+                $remoteDate = $payload['date'] ?? null;
+
+                if (is_string($remoteGrowthCode) && trim($remoteGrowthCode) !== '') {
+                    $returnedGrowthCode = trim($remoteGrowthCode);
+                }
+                if (is_string($remoteGrowthName) && trim($remoteGrowthName) !== '') {
+                    $growthName = trim($remoteGrowthName);
+                }
+                if (is_string($remoteDate) && trim($remoteDate) !== '') {
+                    $recordDate = Carbon::parse($remoteDate)->toDateTimeString();
+                }
+
+                $message = $this->extractMessage($payload, $message);
+                $apiSynced = true;
+            } else {
+                $message = 'Growth stage saved locally, but remote growth service rejected the request.';
+            }
         } catch (ConnectionException) {
-            return $this->handleGatewayFailure($request, 'Growth service is currently unavailable. Please try again.');
+            $message = 'Growth stage saved locally, but remote growth service is unavailable.';
         }
-        if (! $response->successful()) {
-            return $this->handleGatewayFailure(
-                $request,
-                $this->extractMessage($response->json(), 'Failed to create growth stage.'),
-                $response->status()
-            );
-        }
-        $payload = $response->json();
-        $returnedGrowthCode = (string) ($payload['growth_code'] ?? $growthCode);
-        $growthName = (string) ($payload['growth_name'] ?? $validated['growth_name']);
 
         if ($this->hasGrowthCodeColumn()) {
             if ($returnedGrowthCode !== '') {
                 GrowthStage::query()->updateOrCreate(
                     ['growth_code' => $returnedGrowthCode],
-                    ['growth_name' => $growthName]
+                    [
+                        'growth_name' => $growthName,
+                        'date' => $recordDate,
+                    ]
                 );
             }
         } else {
@@ -66,14 +85,15 @@ class AddGrowthController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'ok' => true,
-                'message' => 'Growth stage saved successfully.',
+                'message' => $message,
                 'growth_code' => $returnedGrowthCode,
+                'synced' => $apiSynced,
             ]);
         }
 
         return redirect()
             ->route('show.pig')
-            ->with('success', 'Growth stage saved successfully.');
+            ->with('success', $message);
 
     }
 
@@ -98,19 +118,19 @@ class AddGrowthController extends Controller
     private function generateNextGrowthCode(): string
     {
         if (! $this->hasGrowthCodeColumn()) {
-            return 'GROWTH'.now()->format('ymdHis');
+            $nextNumber = ((int) GrowthStage::query()->max('growth_id')) + 1;
+
+            return sprintf('GROWTH%03d', $nextNumber);
         }
 
-        $codes = GrowthStage::query()
-            ->whereNotNull('growth_code')
-            ->pluck('growth_code');
+        $codes = GrowthStage::query()->whereNotNull('growth_code')->pluck('growth_code');
 
         $max = 0;
         foreach ($codes as $code) {
             if (! is_string($code)) {
                 continue;
             }
-            if (preg_match('/^GROWTH-?(\d+)$/i', $code, $matches) === 1) {
+            if (preg_match('/^GROWTH-?(\d{1,4})$/i', $code, $matches) === 1) {
                 $max = max($max, (int) $matches[1]);
             }
         }
