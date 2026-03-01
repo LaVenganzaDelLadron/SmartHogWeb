@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Batch\AddBatchController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Feeding\FeedingController;
 use App\Http\Controllers\Notification\NotificationController;
@@ -30,7 +31,7 @@ Route::get('/reports', [DashboardController::class, 'showReports'])->name('repor
 Route::post('/pig/pens/add', [AddPenController::class, 'addPenFromWeb'])->name('web.pens.add');
 Route::match(['put', 'patch'], '/pig/pens/{penCode}/update', [UpdatePenController::class, 'updatePenFromWeb'])->name('web.pens.update');
 Route::delete('/pig/pens/{penCode}/delete', [DeletePenController::class, 'deletePenFromWeb'])->name('web.pens.delete');
-Route::post('/pig/batches/add', [AddPenController::class, 'addBatchFromWeb'])->name('web.batches.add');
+Route::post('/pig/batches/add', [AddBatchController::class, 'addBatchFromWeb'])->name('web.batches.add');
 
 // Feeding Routes
 Route::post('/feeding/schedules/add', [FeedingController::class, 'addScheduleFromWeb'])->name('web.feeding.schedules.add');

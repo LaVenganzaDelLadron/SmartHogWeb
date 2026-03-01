@@ -10,6 +10,7 @@ use App\Models\Notification;
 use App\Models\Pen;
 use App\Models\PigBatch;
 use App\Models\PigGrowthRecord;
+use App\Support\Concerns\ResolvesGatewayUrl;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Client\ConnectionException;
@@ -18,6 +19,8 @@ use Illuminate\Support\Facades\Http;
 
 class DashboardController extends Controller
 {
+    use ResolvesGatewayUrl;
+
     public function showDashboard(): View
     {
         $pens = Pen::query()
@@ -91,11 +94,6 @@ class DashboardController extends Controller
     public function showMonitorManagement(): View
     {
         return view('monitor.index');
-    }
-
-    public function showNotifications(): View
-    {
-        return view('notifications.index');
     }
 
     public function showReports(): View
@@ -268,13 +266,5 @@ class DashboardController extends Controller
         if (count($syncedPenCodes) > 0) {
             Pen::query()->whereNotIn('pen_code', $syncedPenCodes)->delete();
         }
-    }
-
-    private function endpointUrl(string $path): string
-    {
-        $baseUrl = rtrim((string) config('services.shapi_auth.base_url', 'http://shapi-qq0p.onrender.com'), '/');
-        $normalizedPath = '/'.ltrim($path, '/');
-
-        return $baseUrl.$normalizedPath;
     }
 }

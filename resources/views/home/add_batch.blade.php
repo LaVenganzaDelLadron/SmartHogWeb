@@ -20,16 +20,16 @@
                 </a>
             </div>
 
-            <div id="batch-form-feedback" class="mt-4 hidden rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800"></div>
+            <div id="batch-form-feedback" class="mt-4 {{ $errors->has('batch') ? '' : 'hidden' }} rounded-xl border {{ $errors->has('batch') ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-emerald-200 bg-emerald-50 text-emerald-800' }} px-3 py-2 text-sm font-medium">
+                {{ $errors->first('batch') }}
+            </div>
 
             <form id="add-batch-form" method="POST" action="{{ route('web.batches.add') }}" class="mt-6 space-y-5">
                 @csrf
                 <section class="rounded-2xl border border-slate-200 bg-slate-50/60 p-3">
                     <p class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Quick Presets</p>
-                    <div class="mt-2 flex flex-wrap gap-2">
-                        @foreach (($growthStages ?? collect()) as $growthStage)
-                            <button type="button" data-fill-batch-stage="{{ $growthStage->growth_name }}" class="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50">{{ $growthStage->growth_name }}</button>
-                        @endforeach
+                    <div id="batch-stage-presets" class="mt-2 flex flex-wrap gap-2">
+                        <span class="text-xs text-slate-500">Loading growth stages...</span>
                     </div>
                 </section>
 
@@ -51,9 +51,6 @@
                         <label for="batch-stage" class="mb-2 block text-sm font-medium text-slate-700">Growth Stage <span class="text-rose-600">*</span></label>
                         <select id="batch-stage" name="growth_stage" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 transition focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" required>
                             <option value="">Select stage</option>
-                            @foreach (($growthStages ?? collect()) as $growthStage)
-                                <option value="{{ $growthStage->growth_name }}">{{ $growthStage->growth_name }}</option>
-                            @endforeach
                         </select>
                     </div>
                     <div>
@@ -85,3 +82,97 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const stageSelect = document.getElementById('batch-stage');
+        const presetContainer = document.getElementById('batch-stage-presets');
+
+        if (!stageSelect || !presetContainer || stageSelect.dataset.growthBound === '1') {
+            return;
+        }
+
+        stageSelect.dataset.growthBound = '1';
+
+        const growthApiUrl = @js(route('growth.index'));
+
+        const bindPresetActions = function () {
+            const presetButtons = presetContainer.querySelectorAll('[data-fill-batch-stage]');
+            presetButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    const growthName = button.getAttribute('data-fill-batch-stage') ?? '';
+                    stageSelect.value = growthName;
+                    stageSelect.dispatchEvent(new Event('change'));
+                });
+            });
+        };
+
+        const renderPresets = function (growthStages) {
+            if (!Array.isArray(growthStages)) {
+                return;
+            }
+
+            presetContainer.innerHTML = growthStages
+                .map(function (growthStage) {
+                    const growthName = String(growthStage.growth_name ?? '').trim();
+                    if (growthName === '') {
+                        return '';
+                    }
+
+                    return `<button type="button" data-fill-batch-stage="${growthName}" class="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50">${growthName}</button>`;
+                })
+                .join('');
+
+            if (presetContainer.innerHTML.trim() === '') {
+                presetContainer.innerHTML = '<span class="text-xs text-slate-500">No growth stages found.</span>';
+            }
+
+            bindPresetActions();
+        };
+
+        const renderSelectOptions = function (growthStages) {
+            if (!Array.isArray(growthStages)) {
+                return;
+            }
+
+            const options = growthStages
+                .map(function (growthStage) {
+                    const growthName = String(growthStage.growth_name ?? '').trim();
+                    const growthCode = String(growthStage.growth_code ?? '').trim();
+                    if (growthName === '' || growthCode === '') {
+                        return '';
+                    }
+
+                    return `<option value="${growthName}" data-growth-code="${growthCode}" data-growth-name="${growthName}">${growthName}</option>`;
+                })
+                .join('');
+
+            stageSelect.innerHTML = '<option value="">Select stage</option>' + options;
+        };
+
+        bindPresetActions();
+
+        fetch(growthApiUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            },
+        })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (payload) {
+                const growthStages = Array.isArray(payload?.data) ? payload.data : [];
+                if (growthStages.length === 0) {
+                    presetContainer.innerHTML = '<span class="text-xs text-slate-500">No growth stages found.</span>';
+                    return;
+                }
+
+                renderSelectOptions(growthStages);
+                renderPresets(growthStages);
+            })
+            .catch(function () {
+                presetContainer.innerHTML = '<span class="text-xs text-rose-600">Unable to load growth stages.</span>';
+            });
+    });
+</script>

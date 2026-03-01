@@ -57,8 +57,9 @@
                 <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                         <p class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Total Pigs</p>
-                        <p class="mt-3 text-3xl font-semibold text-slate-900">{{ number_format($totalPigs ?? 0) }}</p>
-                        <p class="mt-2 text-sm text-slate-600">Across all registered batches</p>
+                        <div id="pig-total-pigs-skeleton" class="mt-3 h-9 w-24 animate-pulse rounded-lg bg-slate-200"></div>
+                        <p id="pig-total-pigs-value" class="mt-3 hidden text-3xl font-semibold text-slate-900">{{ number_format($totalPigs ?? 0) }}</p>
+                        <p id="pig-total-pigs-note" class="mt-2 text-sm text-slate-600">Across all registered batches</p>
                     </article>
 
                     <article class="rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm">
@@ -66,8 +67,9 @@
                             <p class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Active Batches</p>
                             <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">Normal</span>
                         </div>
-                        <p class="mt-3 text-3xl font-semibold text-slate-900">{{ number_format($activeBatches ?? 0) }}</p>
-                        <p class="mt-2 text-sm text-slate-600">1 batch nearing market age</p>
+                        <div id="pig-active-batches-skeleton" class="mt-3 h-9 w-20 animate-pulse rounded-lg bg-slate-200"></div>
+                        <p id="pig-active-batches-value" class="mt-3 hidden text-3xl font-semibold text-slate-900">{{ number_format($activeBatches ?? 0) }}</p>
+                        <p id="pig-active-batches-note" class="mt-2 text-sm text-slate-600">Batches with pigs greater than 0</p>
                     </article>
 
                     <article class="rounded-2xl border border-amber-200 bg-white p-5 shadow-sm">
@@ -180,5 +182,76 @@
                 });
             </script>
         @endif
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const totalPigsValue = document.getElementById('pig-total-pigs-value');
+                const totalPigsSkeleton = document.getElementById('pig-total-pigs-skeleton');
+                const activeBatchesValue = document.getElementById('pig-active-batches-value');
+                const activeBatchesSkeleton = document.getElementById('pig-active-batches-skeleton');
+                const activeBatchesNote = document.getElementById('pig-active-batches-note');
+
+                if (!totalPigsValue || !activeBatchesValue || !totalPigsSkeleton || !activeBatchesSkeleton || totalPigsValue.dataset.bound === '1') {
+                    return;
+                }
+
+                totalPigsValue.dataset.bound = '1';
+
+                const totalPigsApiUrl = @js(route('batches.total_pigs'));
+                const activeBatchesApiUrl = @js(route('batches.active'));
+
+                const formatNumber = function (value) {
+                    return Number(value ?? 0).toLocaleString();
+                };
+
+                const setLoadingState = function () {
+                    totalPigsValue.classList.add('hidden');
+                    activeBatchesValue.classList.add('hidden');
+                    totalPigsSkeleton.classList.remove('hidden');
+                    activeBatchesSkeleton.classList.remove('hidden');
+                };
+
+                const clearLoadingState = function () {
+                    totalPigsSkeleton.classList.add('hidden');
+                    activeBatchesSkeleton.classList.add('hidden');
+                    totalPigsValue.classList.remove('hidden');
+                    activeBatchesValue.classList.remove('hidden');
+                };
+
+                setLoadingState();
+
+                Promise.all([
+                    fetch(totalPigsApiUrl, { headers: { 'Accept': 'application/json' } }).then(function (response) {
+                        return response.json();
+                    }),
+                    fetch(activeBatchesApiUrl, { headers: { 'Accept': 'application/json' } }).then(function (response) {
+                        return response.json();
+                    }),
+                ])
+                    .then(function (results) {
+                        const totalPayload = results[0] ?? {};
+                        const activePayload = results[1] ?? {};
+                        const totalPigs = Number(totalPayload.total_pigs ?? 0);
+                        const activeCount = Number(activePayload.count ?? (Array.isArray(activePayload.data) ? activePayload.data.length : 0));
+
+                        totalPigsValue.textContent = formatNumber(totalPigs);
+                        activeBatchesValue.textContent = formatNumber(activeCount);
+
+                        if (activeBatchesNote) {
+                            activeBatchesNote.textContent = activeCount === 1
+                                ? '1 active batch in production'
+                                : formatNumber(activeCount) + ' active batches in production';
+                        }
+                    })
+                    .catch(function () {
+                        if (activeBatchesNote) {
+                            activeBatchesNote.textContent = 'Unable to refresh active batch count right now';
+                        }
+                    })
+                    .finally(function () {
+                        clearLoadingState();
+                    });
+            });
+        </script>
     </body>
 </html>

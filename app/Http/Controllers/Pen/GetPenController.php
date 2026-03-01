@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Pen;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pen;
+use App\Support\Concerns\ResolvesGatewayUrl;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\Http;
 
 class GetPenController extends Controller
 {
+    use ResolvesGatewayUrl;
+
     public function getAll(Request $request): JsonResponse
     {
         try {
@@ -71,14 +74,6 @@ class GetPenController extends Controller
             'message' => $this->extractMessage($payload, 'Pen records fetched successfully.'),
             'data' => $this->localPenPayload(),
         ], $response->status());
-    }
-
-    private function endpointUrl(string $path): string
-    {
-        $baseUrl = rtrim((string) config('services.shapi_auth.base_url', 'http://shapi-qq0p.onrender.com'), '/');
-        $normalizedPath = '/'.ltrim($path, '/');
-
-        return $baseUrl.$normalizedPath;
     }
 
     private function localPenPayload(): Collection

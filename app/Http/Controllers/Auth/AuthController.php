@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\SignupRequest;
+use App\Support\Concerns\ResolvesGatewayUrl;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -15,6 +16,8 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
+    use ResolvesGatewayUrl;
+
     public function showSignup(): View
     {
         return view('auth.signup');
@@ -131,14 +134,6 @@ class AuthController extends Controller
         return redirect()
             ->route('show.login')
             ->with('success', $message);
-    }
-
-    private function endpointUrl(string $path): string
-    {
-        $baseUrl = rtrim((string) config('services.shapi_auth.base_url', 'http://shapi-qq0p.onrender.com'), '/');
-        $normalizedPath = '/'.ltrim($path, '/');
-
-        return $baseUrl.$normalizedPath;
     }
 
     private function handleApiFailure(Request $request, int $status, mixed $payload, string $fallbackMessage): JsonResponse|RedirectResponse

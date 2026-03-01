@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pen;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Pen\PenRequest;
 use App\Models\Pen;
+use App\Support\Concerns\ResolvesGatewayUrl;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Http;
 
 class UpdatePenController extends Controller
 {
+    use ResolvesGatewayUrl;
+
     public function updatePen(PenRequest $request, string $penCode): JsonResponse|RedirectResponse
     {
         $validated = $request->validated();
@@ -82,14 +85,6 @@ class UpdatePenController extends Controller
         }
 
         return redirect()->route('show.pig');
-    }
-
-    private function endpointUrl(string $path): string
-    {
-        $baseUrl = rtrim((string) config('services.shapi_auth.base_url', 'http://shapi-qq0p.onrender.com'), '/');
-        $normalizedPath = '/'.ltrim($path, '/');
-
-        return $baseUrl.$normalizedPath;
     }
 
     private function extractMessage(mixed $payload, string $fallback): string

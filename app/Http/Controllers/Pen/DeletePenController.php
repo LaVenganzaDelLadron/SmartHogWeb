@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pen;
 use App\Http\Controllers\Controller;
 use App\Models\Pen;
 use App\Models\PigBatch;
+use App\Support\Concerns\ResolvesGatewayUrl;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\Http;
 
 class DeletePenController extends Controller
 {
+    use ResolvesGatewayUrl;
+
     public function deletePen(Request $request, string $penCode): JsonResponse|RedirectResponse
     {
         $normalizedPenCode = strtoupper(str_replace('-', '', trim($penCode)));
@@ -70,14 +73,6 @@ class DeletePenController extends Controller
         }
 
         return redirect()->route('show.pig');
-    }
-
-    private function endpointUrl(string $path): string
-    {
-        $baseUrl = rtrim((string) config('services.shapi_auth.base_url', 'http://shapi-qq0p.onrender.com'), '/');
-        $normalizedPath = '/'.ltrim($path, '/');
-
-        return $baseUrl.$normalizedPath;
     }
 
     private function extractMessage(mixed $payload, string $fallback): string
