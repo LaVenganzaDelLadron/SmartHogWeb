@@ -25,11 +25,6 @@ Route::get('/pens', [GetPenController::class, 'getAll'])->name('pens.index');
 Route::post('/pens/add', [AddPenController::class, 'addPen'])->name('pens.add');
 Route::put('/pens/{penCode}', [UpdatePenController::class, 'updatePen'])->name('pens.update');
 Route::delete('/pens/{penCode}', [DeletePenController::class, 'deletePen'])->name('pens.delete');
-Route::post('/feeding/schedules/add', [FeedingController::class, 'addSchedule'])->name('feeding.schedules.add');
-Route::get('/feeding/schedules', [FeedingController::class, 'listSchedules'])->name('feeding.schedules.list');
-Route::get('/notifications', [NotificationController::class, 'list'])->name('notifications.list');
-Route::post('/notifications/receive', [NotificationController::class, 'store'])->name('notifications.store');
-Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 
 // Growth Stage Routes
 Route::post('/feeding/add-growth-stage', [AddGrowthController::class, 'addGrowthStage'])->name('feeding.addGrowthStage');
