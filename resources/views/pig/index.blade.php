@@ -199,6 +199,8 @@
 
                 const totalPigsApiUrl = @js(route('batches.total_pigs'));
                 const activeBatchesApiUrl = @js(route('batches.active'));
+                const totalPigsCacheKey = 'smarthog:pig:total_pigs:v1';
+                const activeBatchesCacheKey = 'smarthog:pig:active_count:v1';
 
                 const formatNumber = function (value) {
                     return Number(value ?? 0).toLocaleString();
@@ -218,7 +220,38 @@
                     activeBatchesValue.classList.remove('hidden');
                 };
 
+                const readCachedNumber = function (key) {
+                    const rawValue = sessionStorage.getItem(key);
+                    if (rawValue === null) {
+                        return null;
+                    }
+
+                    const parsedValue = Number(rawValue);
+                    return Number.isFinite(parsedValue) ? parsedValue : null;
+                };
+
+                const writeCachedNumber = function (key, value) {
+                    try {
+                        sessionStorage.setItem(key, String(Number(value ?? 0)));
+                    } catch (error) {
+                        // Ignore cache write failures.
+                    }
+                };
+
                 setLoadingState();
+
+                const cachedTotalPigs = readCachedNumber(totalPigsCacheKey);
+                const cachedActiveCount = readCachedNumber(activeBatchesCacheKey);
+                if (cachedTotalPigs !== null && cachedActiveCount !== null) {
+                    totalPigsValue.textContent = formatNumber(cachedTotalPigs);
+                    activeBatchesValue.textContent = formatNumber(cachedActiveCount);
+                    if (activeBatchesNote) {
+                        activeBatchesNote.textContent = cachedActiveCount === 1
+                            ? '1 active batch in production'
+                            : formatNumber(cachedActiveCount) + ' active batches in production';
+                    }
+                    clearLoadingState();
+                }
 
                 Promise.all([
                     fetch(totalPigsApiUrl, { headers: { 'Accept': 'application/json' } }).then(function (response) {
@@ -236,6 +269,8 @@
 
                         totalPigsValue.textContent = formatNumber(totalPigs);
                         activeBatchesValue.textContent = formatNumber(activeCount);
+                        writeCachedNumber(totalPigsCacheKey, totalPigs);
+                        writeCachedNumber(activeBatchesCacheKey, activeCount);
 
                         if (activeBatchesNote) {
                             activeBatchesNote.textContent = activeCount === 1

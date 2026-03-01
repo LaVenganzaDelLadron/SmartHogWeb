@@ -10,6 +10,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Throwable;
 
@@ -19,6 +20,14 @@ class GetBatchController extends Controller
 
     public function getTotalPigs(Request $request): JsonResponse
     {
+        $cacheKey = 'api:batches:total-pigs';
+        if ($request->query('fresh') !== '1') {
+            $cachedPayload = Cache::get($cacheKey);
+            if (is_array($cachedPayload)) {
+                return response()->json($cachedPayload);
+            }
+        }
+
         try {
             $response = Http::acceptJson()
                 ->timeout(15)
@@ -47,15 +56,27 @@ class GetBatchController extends Controller
         $payload = $response->json();
         $totalPigs = (int) ($payload['total_pigs'] ?? 0);
 
-        return response()->json([
+        $responsePayload = [
             'ok' => true,
             'message' => $this->extractMessage($payload, 'Total pigs fetched successfully'),
             'total_pigs' => $totalPigs,
-        ], $response->status());
+        ];
+
+        Cache::put($cacheKey, $responsePayload, now()->addSeconds(20));
+
+        return response()->json($responsePayload, $response->status());
     }
 
     public function getActiveBatches(Request $request): JsonResponse
     {
+        $cacheKey = 'api:batches:active';
+        if ($request->query('fresh') !== '1') {
+            $cachedPayload = Cache::get($cacheKey);
+            if (is_array($cachedPayload)) {
+                return response()->json($cachedPayload);
+            }
+        }
+
         try {
             $response = Http::acceptJson()
                 ->timeout(15)
@@ -91,16 +112,28 @@ class GetBatchController extends Controller
         $batches = $this->resolveBatchList($payload);
         $normalizedBatches = $this->normalizeGrowthStageNames($batches);
 
-        return response()->json([
+        $responsePayload = [
             'ok' => true,
             'message' => $this->extractMessage($payload, 'Active pig batches fetched successfully'),
             'count' => count($normalizedBatches),
             'data' => $normalizedBatches,
-        ], $response->status());
+        ];
+
+        Cache::put($cacheKey, $responsePayload, now()->addSeconds(20));
+
+        return response()->json($responsePayload, $response->status());
     }
 
     public function getAll(Request $request): JsonResponse
     {
+        $cacheKey = 'api:batches:all';
+        if ($request->query('fresh') !== '1') {
+            $cachedPayload = Cache::get($cacheKey);
+            if (is_array($cachedPayload)) {
+                return response()->json($cachedPayload);
+            }
+        }
+
         try {
             $response = Http::acceptJson()
                 ->timeout(15)
@@ -159,12 +192,16 @@ class GetBatchController extends Controller
             // Keep response usable even if local sync fails.
         }
 
-        return response()->json([
+        $responsePayload = [
             'ok' => true,
             'message' => $this->extractMessage($payload, 'Pig Batches fetched successfully'),
             'count' => count($normalizedBatches),
             'data' => $normalizedBatches,
-        ], $response->status());
+        ];
+
+        Cache::put($cacheKey, $responsePayload, now()->addSeconds(20));
+
+        return response()->json($responsePayload, $response->status());
     }
 
     private function normalizeGrowthStageNames(array $batches): array

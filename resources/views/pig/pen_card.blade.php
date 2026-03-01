@@ -74,6 +74,7 @@
 
         const pensApiUrl = @js(route('pens.index'));
         const pigPageUrl = @js(route('show.pig'));
+        const pensCacheKey = 'smarthog:pig:pens:v1';
 
         const escapeHtml = function (value) {
             return String(value ?? '')
@@ -177,6 +178,44 @@
             }
         };
 
+        const renderPens = function (pens) {
+            if (!Array.isArray(pens) || pens.length === 0) {
+                renderMessageRow('No pen records yet.');
+                return;
+            }
+
+            tableBody.innerHTML = pens.map(buildRowMarkup).join('') + '<tr id="pen-no-results-row" class="hidden"><td colspan="6" class="px-4 py-8 text-center text-sm text-slate-500">No matching pen records found.</td></tr>';
+
+            const refreshedNoResultsRow = document.getElementById('pen-no-results-row');
+            if (refreshedNoResultsRow) {
+                refreshedNoResultsRow.classList.add('hidden');
+            }
+
+            applyFilters();
+        };
+
+        const readCachedPens = function () {
+            try {
+                const cached = sessionStorage.getItem(pensCacheKey);
+                if (!cached) {
+                    return null;
+                }
+
+                const parsed = JSON.parse(cached);
+                return Array.isArray(parsed) ? parsed : null;
+            } catch (error) {
+                return null;
+            }
+        };
+
+        const writeCachedPens = function (pens) {
+            try {
+                sessionStorage.setItem(pensCacheKey, JSON.stringify(pens));
+            } catch (error) {
+                // Ignore cache write failures.
+            }
+        };
+
         const applyFilters = function () {
             const term = searchInput.value.trim().toLowerCase();
             const selectedStatus = statusFilter.value.trim().toLowerCase();
@@ -205,6 +244,11 @@
         searchInput.addEventListener('input', applyFilters);
         statusFilter.addEventListener('change', applyFilters);
 
+        const cachedPens = readCachedPens();
+        if (Array.isArray(cachedPens) && cachedPens.length > 0) {
+            renderPens(cachedPens);
+        }
+
         fetch(pensApiUrl, {
             method: 'GET',
             headers: {
@@ -221,20 +265,10 @@
             })
             .then(function (result) {
                 const pens = Array.isArray(result.payload?.data) ? result.payload.data : [];
-
-                if (pens.length === 0) {
-                    renderMessageRow('No pen records yet.');
-                    return;
+                renderPens(pens);
+                if (pens.length > 0) {
+                    writeCachedPens(pens);
                 }
-
-                tableBody.innerHTML = pens.map(buildRowMarkup).join('') + '<tr id="pen-no-results-row" class="hidden"><td colspan="6" class="px-4 py-8 text-center text-sm text-slate-500">No matching pen records found.</td></tr>';
-
-                const refreshedNoResultsRow = document.getElementById('pen-no-results-row');
-                if (refreshedNoResultsRow) {
-                    refreshedNoResultsRow.classList.add('hidden');
-                }
-
-                applyFilters();
             })
             .catch(function () {
                 renderMessageRow('Unable to load pen records right now. Please refresh this page.');

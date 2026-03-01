@@ -63,6 +63,7 @@
 
         batchesBody.dataset.bound = '1';
         const batchesApiUrl = @js(route('batches.index'));
+        const batchesCacheKey = 'smarthog:pig:batches:v1';
 
         const escapeHtml = function (value) {
             return String(value ?? '')
@@ -120,6 +121,33 @@
             }).join('');
         };
 
+        const readCachedBatches = function () {
+            try {
+                const cached = sessionStorage.getItem(batchesCacheKey);
+                if (!cached) {
+                    return null;
+                }
+
+                const parsed = JSON.parse(cached);
+                return Array.isArray(parsed) ? parsed : null;
+            } catch (error) {
+                return null;
+            }
+        };
+
+        const writeCachedBatches = function (batches) {
+            try {
+                sessionStorage.setItem(batchesCacheKey, JSON.stringify(batches));
+            } catch (error) {
+                // Ignore cache write failures.
+            }
+        };
+
+        const cachedBatches = readCachedBatches();
+        if (Array.isArray(cachedBatches) && cachedBatches.length > 0) {
+            renderRows(cachedBatches);
+        }
+
         fetch(batchesApiUrl, {
             method: 'GET',
             headers: {
@@ -132,6 +160,9 @@
             .then(function (payload) {
                 const batches = Array.isArray(payload?.data) ? payload.data : [];
                 renderRows(batches);
+                if (batches.length > 0) {
+                    writeCachedBatches(batches);
+                }
             })
             .catch(function () {
                 batchesBody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-sm text-rose-600">Unable to load pig batches right now.</td></tr>';

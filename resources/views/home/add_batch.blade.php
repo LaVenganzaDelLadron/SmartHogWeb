@@ -95,6 +95,7 @@
         stageSelect.dataset.growthBound = '1';
 
         const growthApiUrl = @js(route('growth.index'));
+        const growthCacheKey = 'smarthog:growth:stages:v1';
 
         const bindPresetActions = function () {
             const presetButtons = presetContainer.querySelectorAll('[data-fill-batch-stage]');
@@ -150,7 +151,35 @@
             stageSelect.innerHTML = '<option value="">Select stage</option>' + options;
         };
 
+        const readCachedGrowthStages = function () {
+            try {
+                const cached = sessionStorage.getItem(growthCacheKey);
+                if (!cached) {
+                    return null;
+                }
+
+                const parsed = JSON.parse(cached);
+                return Array.isArray(parsed) ? parsed : null;
+            } catch (error) {
+                return null;
+            }
+        };
+
+        const writeCachedGrowthStages = function (growthStages) {
+            try {
+                sessionStorage.setItem(growthCacheKey, JSON.stringify(growthStages));
+            } catch (error) {
+                // Ignore cache write failures.
+            }
+        };
+
         bindPresetActions();
+
+        const cachedGrowthStages = readCachedGrowthStages();
+        if (Array.isArray(cachedGrowthStages) && cachedGrowthStages.length > 0) {
+            renderSelectOptions(cachedGrowthStages);
+            renderPresets(cachedGrowthStages);
+        }
 
         fetch(growthApiUrl, {
             method: 'GET',
@@ -170,6 +199,7 @@
 
                 renderSelectOptions(growthStages);
                 renderPresets(growthStages);
+                writeCachedGrowthStages(growthStages);
             })
             .catch(function () {
                 presetContainer.innerHTML = '<span class="text-xs text-rose-600">Unable to load growth stages.</span>';

@@ -9,6 +9,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Throwable;
 
@@ -19,6 +20,14 @@ class GetGrowthController extends Controller
 
     public function getAll(Request $request): JsonResponse
     {
+        $cacheKey = 'api:growth:all';
+        if ($request->query('fresh') !== '1') {
+            $cachedPayload = Cache::get($cacheKey);
+            if (is_array($cachedPayload)) {
+                return response()->json($cachedPayload);
+            }
+        }
+
         try {
             $response = Http::acceptJson()
                 ->timeout(15)
@@ -82,12 +91,16 @@ class GetGrowthController extends Controller
             // Keep API response usable for dropdowns even if local sync fails.
         }
 
-        return response()->json([
+        $responsePayload = [
             'ok' => true,
             'message' => $this->extractMessage($payload, 'Growth Stage fetched successfully'),
             'count' => count($growthStages),
             'data' => $growthStages,
-        ], $response->status());
+        ];
+
+        Cache::put($cacheKey, $responsePayload, now()->addSeconds(20));
+
+        return response()->json($responsePayload, $response->status());
     }
 
     private function localGrowthPayload(): Collection
