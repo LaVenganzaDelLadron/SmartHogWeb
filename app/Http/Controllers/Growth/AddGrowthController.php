@@ -1,28 +1,27 @@
 <?php
 
-namespace App\Http\Controllers\Pen;
+namespace App\Http\Controllers\Growth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Pen\PenRequest;
-use App\Models\Pen;
+use App\Http\Requests\Growth\GrowthRequest;
+use App\Models\GrowthStage;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
-class AddPenController extends Controller
+class AddGrowthController extends Controller
 {
-    // Adding a Pen
-    public function addPen(PenRequest $request): JsonResponse|RedirectResponse
+    // Adding a Growth Stage
+    public function addGrowthStage(GrowthRequest $request): JsonResponse|RedirectResponse
     {
         $validated = $request->validated();
-        $penCode = isset($validated['pen_code']) && is_string($validated['pen_code']) && trim($validated['pen_code']) !== ''
-            ? trim($validated['pen_code'])
-            : $this->generateNextPenCode();
-        $status = 'available';
-        $notes = trim((string) ($validated['notes'] ?? ''));
+        $growthCode = isset($validated['growth_code']) && is_string($validated['growth_code']) && trim($validated['growth_code']) !== ''
+            ? trim($validated['growth_code'])
+            : $this->generateNextGrowthCode();
         $recordDate = isset($validated['date'])
             ? Carbon::parse($validated['date'])->toIso8601String()
             : now()->toIso8601String();
@@ -32,60 +31,55 @@ class AddPenController extends Controller
                 ->asJson()
                 ->timeout(15)
                 ->connectTimeout(5)
-                ->post($this->endpointUrl('/pen/add/'), [
-                    'pen_code' => $penCode,
-                    'pen_name' => $validated['pen_name'],
-                    'capacity' => (int) $validated['capacity'],
-                    'status' => $status,
-                    'notes' => $notes !== '' ? $notes : 'No notes',
+                ->post($this->endpointUrl('/growth/add/'), [
+                    'growth_code' => $growthCode,
+                    'growth_name' => $validated['growth_name'],
                     'date' => $recordDate,
                 ]);
         } catch (ConnectionException) {
-            return $this->handleGatewayFailure($request, 'Pen service is currently unavailable. Please try again.');
+            return $this->handleGatewayFailure($request, 'Growth service is currently unavailable. Please try again.');
         }
-
         if (! $response->successful()) {
             return $this->handleGatewayFailure(
                 $request,
-                $this->extractMessage($response->json(), 'Failed to create pen.'),
+                $this->extractMessage($response->json(), 'Failed to create growth stage.'),
                 $response->status()
             );
         }
-
         $payload = $response->json();
-        $returnedPenCode = (string) ($payload['pen_code'] ?? $penCode);
-        $penName = (string) ($payload['pen_name'] ?? $validated['pen_name']);
+        $returnedGrowthCode = (string) ($payload['growth_code'] ?? $growthCode);
+        $growthName = (string) ($payload['growth_name'] ?? $validated['growth_name']);
 
-        if ($returnedPenCode !== '') {
-            Pen::query()->updateOrCreate(
-                ['pen_code' => $returnedPenCode],
-                [
-                    'pen_name' => $penName,
-                    'capacity' => (int) $validated['capacity'],
-                    'status' => $status,
-                    'notes' => $notes !== '' ? $notes : null,
-                ]
+        if ($this->hasGrowthCodeColumn()) {
+            if ($returnedGrowthCode !== '') {
+                GrowthStage::query()->updateOrCreate(
+                    ['growth_code' => $returnedGrowthCode],
+                    ['growth_name' => $growthName]
+                );
+            }
+        } else {
+            GrowthStage::query()->firstOrCreate(
+                ['growth_name' => $growthName]
             );
         }
 
         if ($request->expectsJson()) {
             return response()->json([
                 'ok' => true,
-                'message' => $this->extractMessage($payload, 'Pen Successfully Created'),
-                'pen_code' => $returnedPenCode,
-                'pen_name' => $penName,
-            ], $response->status());
+                'message' => 'Growth stage saved successfully.',
+                'growth_code' => $returnedGrowthCode,
+            ]);
         }
 
         return redirect()
             ->route('show.pig')
-            ->with('success', $this->extractMessage($payload, 'Pen Successfully Created'));
+            ->with('success', 'Growth stage saved successfully.');
+
     }
 
-    public function addPenFromWeb(PenRequest $request): RedirectResponse
+    public function addGrowthStageFromWeb(GrowthRequest $request): RedirectResponse
     {
-        $response = $this->addPen($request);
-
+        $response = $this->addGrowthStage($request);
         if ($response instanceof RedirectResponse) {
             return $response;
         }
@@ -101,23 +95,32 @@ class AddPenController extends Controller
         return $baseUrl.$normalizedPath;
     }
 
-    private function generateNextPenCode(): string
+    private function generateNextGrowthCode(): string
     {
-        $codes = Pen::query()
-            ->whereNotNull('pen_code')
-            ->pluck('pen_code');
+        if (! $this->hasGrowthCodeColumn()) {
+            return 'GROWTH'.now()->format('ymdHis');
+        }
+
+        $codes = GrowthStage::query()
+            ->whereNotNull('growth_code')
+            ->pluck('growth_code');
 
         $max = 0;
         foreach ($codes as $code) {
             if (! is_string($code)) {
                 continue;
             }
-            if (preg_match('/^PEN-?(\d+)$/i', $code, $matches) === 1) {
+            if (preg_match('/^GROWTH-?(\d+)$/i', $code, $matches) === 1) {
                 $max = max($max, (int) $matches[1]);
             }
         }
 
-        return sprintf('PEN%03d', $max + 1);
+        return sprintf('GROWTH%03d', $max + 1);
+    }
+
+    private function hasGrowthCodeColumn(): bool
+    {
+        return Schema::hasColumn('growth_stages', 'growth_code');
     }
 
     private function extractMessage(mixed $payload, string $fallback): string
@@ -155,6 +158,6 @@ class AddPenController extends Controller
 
         return back()
             ->withInput($request->except('password', 'password_confirmation'))
-            ->withErrors(['pen' => $message]);
+            ->withErrors(['growth' => $message]);
     }
 }

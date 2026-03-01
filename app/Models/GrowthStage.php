@@ -13,6 +13,8 @@ class GrowthStage extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'growth_code',
         'growth_name',
+        'date',
     ];
 }

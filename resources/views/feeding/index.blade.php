@@ -16,6 +16,13 @@
         @endif
     </head>
     <body class="min-h-screen bg-[radial-gradient(70rem_44rem_at_0%_-10%,rgba(22,163,74,0.12),transparent),radial-gradient(60rem_40rem_at_100%_0%,rgba(120,53,15,0.08),transparent),#f6f5ef] text-slate-800 antialiased">
+        @php
+            $growthRequestFailed = $errors->has('growth') || $errors->has('growth_name') || $errors->has('date');
+            $growthFailureMessage = $errors->first('growth')
+            ?: $errors->first('growth_name')
+            ?: $errors->first('date');
+        @endphp
+        
         @include('layouts.sidebar', ['deviceOnline' => true])
 
         <main class="min-h-screen px-4 pb-10 pt-20 lg:ml-80 lg:px-8 lg:pt-8">
@@ -27,7 +34,7 @@
                             <h1 class="mt-2 text-2xl font-semibold text-slate-900 sm:text-3xl">Feeding Management</h1>
                             <p class="mt-2 max-w-3xl text-sm text-slate-600">Manage feeding schedules, monitor dispenser activity, and quickly act on delays to keep operations reliable and automated.</p>
                         </div>
-                            <a href="{{ route('show.feeding', ['modal' => 'add-growth-stage']) }}" class="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2">
+                            <a href="{{ route('show.feeding', ['modal' => 'add-growth']) }}" class="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2">
                                 <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 14.5h11M4.5 10h11M4.5 5.5h11" />
                                 </svg>
@@ -153,26 +160,30 @@
         </main>
 
         @include('feeding.add_feed_sched')
+        @include('feeding.add_growth_stage')
 
-        <script>
-            document.querySelectorAll('.feeder-toggle').forEach((toggle) => {
-                toggle.addEventListener('change', (event) => {
-                    const input = event.currentTarget;
-                    const feeder = input.dataset.feeder || 'Feeder';
-                    const action = input.checked ? 'OPEN' : 'CLOSE';
-                    const ok = window.confirm(`Confirm manual override: ${action} ${feeder}?`);
+        @if (session('success') || $growthRequestFailed)  
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const successMessage = @json(session('success'));
+                    const failureMessage = @json($growthFailureMessage);
 
-                    if (!ok) {
-                        input.checked = !input.checked;
-                        return;
+                    if (successMessage && typeof window.showSuccessAlert === 'function') {
+                        window.showSuccessAlert({
+                            title: 'Request Successful',
+                            message: successMessage,
+                            durationMs: 3200,
+                        });
                     }
-
-                    const statusText = input.closest('div.rounded-xl')?.querySelector('p.text-xs span');
-                    if (statusText) {
-                        statusText.textContent = input.checked ? 'Open' : 'Closed';
+                    if (failureMessage && typeof window.showErrorAlert === 'function') {
+                        window.showErrorAlert({
+                            title: 'Request Failed',
+                            message: failureMessage,
+                            durationMs: 3200,
+                        });
                     }
                 });
-            });
-        </script>
+            </script>
+        @endif
     </body>
 </html>

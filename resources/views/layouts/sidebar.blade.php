@@ -149,7 +149,7 @@
                     <span data-profile-name="{{ $profileName }}">{{ $profileName }}</span>
                 </a>
 
-                <form method="POST" class="js-firebase-logout" action="{{ Route::has('logout') ? route('logout') : '#' }}">
+                <form method="POST" class="js-firebase-logout" action="{{ Route::has('web.logout') ? route('web.logout') : '#' }}">
                     @csrf
                     <button type="submit" class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-700 hover:bg-rose-50">
                         <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -243,7 +243,7 @@
                     <span class="text-label" data-profile-name="{{ $profileName }}">{{ $profileName }}</span>
                 </a>
 
-                <form method="POST" class="js-firebase-logout" action="{{ Route::has('logout') ? route('logout') : '#' }}">
+                <form method="POST" class="js-firebase-logout" action="{{ Route::has('web.logout') ? route('web.logout') : '#' }}">
                     @csrf
                     <button type="submit" class="account-link flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-700 hover:bg-rose-50" title="Logout">
                         <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">

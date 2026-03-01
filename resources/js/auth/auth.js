@@ -330,13 +330,47 @@ function bindLoginForm() {
     });
 }
 
+function bindLogoutForms() {
+    const forms = document.querySelectorAll('form.js-firebase-logout');
+    if (!forms.length) {
+        return;
+    }
+
+    forms.forEach((form) => {
+        if (form.dataset.firebaseBound === '1') {
+            return;
+        }
+
+        form.dataset.firebaseBound = '1';
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn instanceof HTMLButtonElement) {
+                submitBtn.disabled = true;
+            }
+
+            try {
+                await signOut(auth);
+            } catch {
+                // Continue with Laravel logout even if Firebase sign out fails.
+            }
+
+            form.submit();
+        });
+    });
+}
+
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         bindSignupForm();
         bindLoginForm();
+        bindLogoutForms();
     });
 } else {
     bindSignupForm();
     bindLoginForm();
+    bindLogoutForms();
 }
