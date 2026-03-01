@@ -6,24 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
-    public function index(): View
+    public function index(): RedirectResponse
     {
-        $notifications = Notification::query()
-            ->orderByDesc('recorded_date')
-            ->get();
-
-        $newNotificationsCount = (int) Notification::query()
-            ->where('status', 'new')
-            ->count();
-
-        return view('notifications.index', [
-            'notifications' => $notifications,
-            'newNotificationsCount' => $newNotificationsCount,
-        ]);
+        return redirect()->route('reports.index');
     }
 
     public function list(): JsonResponse
@@ -34,6 +24,17 @@ class NotificationController extends Controller
 
         return response()->json([
             'ok' => true,
+            'notifications' => $notifications,
+        ]);
+    }
+
+    public function cards(): View
+    {
+        $notifications = Notification::query()
+            ->orderByDesc('recorded_date')
+            ->get();
+
+        return view('notifications.notif_card', [
             'notifications' => $notifications,
         ]);
     }

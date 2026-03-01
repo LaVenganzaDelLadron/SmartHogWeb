@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Feeding\FeedingController;
-use App\Http\Controllers\Growth\AddGrowthController;
 use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\Pen\AddPenController;
 use App\Http\Controllers\Pen\DeletePenController;
@@ -26,5 +25,6 @@ Route::post('/pens/add', [AddPenController::class, 'addPen'])->name('pens.add');
 Route::put('/pens/{penCode}', [UpdatePenController::class, 'updatePen'])->name('pens.update');
 Route::delete('/pens/{penCode}', [DeletePenController::class, 'deletePen'])->name('pens.delete');
 
-// Growth Stage Routes
-Route::post('/feeding/add-growth-stage', [AddGrowthController::class, 'addGrowthStage'])->name('feeding.addGrowthStage');
+// Feeding/Notification Routes
+Route::get('/feeding/schedules', [FeedingController::class, 'listSchedules'])->name('feeding.schedules.index');
+Route::get('/notifications', [NotificationController::class, 'list'])->name('notifications.list');

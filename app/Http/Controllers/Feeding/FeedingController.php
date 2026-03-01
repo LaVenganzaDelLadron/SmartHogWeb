@@ -30,7 +30,7 @@ class FeedingController extends Controller
         return view('feeding.index', [
             'feedingBatches' => $feedingBatches,
             'feedingTypes' => $feedingTypes,
-            'feedingCards' => $this->buildFeedingCards(),
+            'feedingCards' => collect(),
         ]);
     }
 

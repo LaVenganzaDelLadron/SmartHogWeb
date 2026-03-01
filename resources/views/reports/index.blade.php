@@ -200,6 +200,23 @@
                         </table>
                     </div>
                 </section>
+
+                <section id="reports-notifications-fusion" class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                    <div class="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Fused View</p>
+                            <h2 class="mt-2 text-xl font-semibold text-slate-900 sm:text-2xl">Notifications in Reports</h2>
+                            <p class="mt-2 max-w-3xl text-sm text-slate-600">Recent alerts and updates are now included here so Reports and Notifications are in one page.</p>
+                        </div>
+                        <span class="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-semibold text-cyan-700">
+                            New: {{ number_format($newNotificationsCount ?? 0) }}
+                        </span>
+                    </div>
+
+                    <div class="mt-4 space-y-4">
+                        @include('notifications.notif_card', ['notifications' => $notifications ?? collect()])
+                    </div>
+                </section>
             </div>
         </main>
 

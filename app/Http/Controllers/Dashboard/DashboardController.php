@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\FeedingRecord;
 use App\Models\GrowthStage;
 use App\Models\HealthRecord;
+use App\Models\Notification;
 use App\Models\Pen;
 use App\Models\PigBatch;
 use App\Models\PigGrowthRecord;
@@ -43,8 +44,6 @@ class DashboardController extends Controller
 
     public function showPigManagement(): View
     {
-        $this->syncPensFromGateway();
-
         $pens = Pen::query()
             ->select(['pen_code', 'pen_name', 'capacity', 'status', 'notes', 'record_date'])
             ->whereNotNull('pen_code')
@@ -66,7 +65,7 @@ class DashboardController extends Controller
             'totalPigs' => $totalPigs,
             'activeBatches' => $activeBatches,
             'pigBatchCards' => $pigBatchCards,
-            'penCards' => $this->buildPenCards($pens),
+            'penCards' => collect(),
         ]);
     }
 
@@ -101,7 +100,18 @@ class DashboardController extends Controller
 
     public function showReports(): View
     {
-        return view('reports.index');
+        $notifications = Notification::query()
+            ->orderByDesc('recorded_date')
+            ->get();
+
+        $newNotificationsCount = (int) Notification::query()
+            ->where('status', 'new')
+            ->count();
+
+        return view('reports.index', [
+            'notifications' => $notifications,
+            'newNotificationsCount' => $newNotificationsCount,
+        ]);
     }
 
     private function buildPigBatchCards(): Collection

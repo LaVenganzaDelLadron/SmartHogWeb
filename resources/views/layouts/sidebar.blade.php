@@ -31,12 +31,6 @@
             'active' => request()->routeIs('Monitoring MAangement') || request()->routeIs('show.monitor'),
         ],
         [
-            'label' => 'Notifications',
-            'icon' => 'notifications',
-            'route' => Route::has('show.notifications') ? route('show.notifications') : (Route::has('notifications.system') ? route('notifications.system') : '#'),
-            'active' => request()->routeIs('notifications.*') || request()->routeIs('show.notifications'),
-        ],
-        [
             'label' => 'Reports',
             'icon' => 'reports',
             'route' => Route::has('reports.index') ? route('reports.index') : '#',

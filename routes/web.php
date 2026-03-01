@@ -3,7 +3,6 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Feeding\FeedingController;
-use App\Http\Controllers\Growth\AddGrowthController;
 use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\Pen\AddPenController;
 use App\Http\Controllers\Pen\DeletePenController;
@@ -24,6 +23,7 @@ Route::get('/pig', [DashboardController::class, 'showPigManagement'])->name('sho
 Route::get('/feeding', [FeedingController::class, 'showFeedingManagement'])->name('show.feeding');
 Route::get('/monitor', [DashboardController::class, 'showMonitorManagement'])->name('show.monitor');
 Route::get('/notifications', [NotificationController::class, 'index'])->name('show.notifications');
+Route::get('/notifications/cards', [NotificationController::class, 'cards'])->name('notifications.cards');
 Route::get('/reports', [DashboardController::class, 'showReports'])->name('reports.index');
 
 // Pig Pen Routes
@@ -33,6 +33,4 @@ Route::delete('/pig/pens/{penCode}/delete', [DeletePenController::class, 'delete
 Route::post('/pig/batches/add', [AddPenController::class, 'addBatchFromWeb'])->name('web.batches.add');
 
 // Feeding Routes
-Route::post('/feeding/add-growth-stage', [AddGrowthController::class, 'addGrowthStageFromWeb'])
-    ->name('web.feeding.addGrowth');
 Route::post('/feeding/schedules/add', [FeedingController::class, 'addScheduleFromWeb'])->name('web.feeding.schedules.add');
