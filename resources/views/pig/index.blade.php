@@ -157,6 +157,7 @@
         @include('pig.add_pig')
         @include('pig.update_pen')
         @include('pig.delete_pen')
+        @include('pig.delete_batch')
 
         @if (session('success') || $penRequestFailed)
             <script>
