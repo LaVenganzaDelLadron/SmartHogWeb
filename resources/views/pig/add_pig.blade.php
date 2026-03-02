@@ -82,3 +82,201 @@
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const stageSelect = document.getElementById('pig-stage');
+        const presetContainer = document.getElementById('pig-stage-presets');
+        const penSelect = document.getElementById('pig-pen');
+
+        if (! stageSelect || ! presetContainer || ! penSelect || stageSelect.dataset.growthBound === '1') {
+            return;
+        }
+
+        stageSelect.dataset.growthBound = '1';
+
+        const growthApiUrl = '{{ route('api.growth.all') }}';
+        const pensApiUrl = '{{ route('api.pens.all') }}';
+        const growthCacheKey = 'smarthog:growth:stages:v1';
+        const pensCacheKey = 'smarthog:pens:all:v1';
+
+        const bindPresetActions = function () {
+            const presetButtons = presetContainer.querySelectorAll('[data-fill-pig-stage]');
+            presetButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    const growthName = button.getAttribute('data-fill-pig-stage') ?? '';
+                    stageSelect.value = growthName;
+                    stageSelect.dispatchEvent(new Event('change'));
+                });
+            });
+        };
+
+        const renderPresets = function (growthStages) {
+            if (! Array.isArray(growthStages)) {
+                return;
+            }
+
+            presetContainer.innerHTML = growthStages
+                .map(function (growthStage) {
+                    const growthName = String(growthStage.growth_name ?? '').trim();
+                    if (growthName === '') {
+                        return '';
+                    }
+
+                    return `<button type="button" data-fill-pig-stage="${growthName}" class="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50">${growthName}</button>`;
+                })
+                .join('');
+
+            if (presetContainer.innerHTML.trim() === '') {
+                presetContainer.innerHTML = '<span class="text-xs text-slate-500">No growth stages found.</span>';
+            }
+
+            bindPresetActions();
+        };
+
+        const renderSelectOptions = function (growthStages) {
+            if (! Array.isArray(growthStages)) {
+                return;
+            }
+
+            const options = growthStages
+                .map(function (growthStage) {
+                    const growthName = String(growthStage.growth_name ?? '').trim();
+                    if (growthName === '') {
+                        return '';
+                    }
+
+                    return `<option value="${growthName}">${growthName}</option>`;
+                })
+                .join('');
+
+            stageSelect.innerHTML = '<option value="">Select stage</option>' + options;
+        };
+
+        const readCachedGrowthStages = function () {
+            try {
+                const cached = sessionStorage.getItem(growthCacheKey);
+                if (! cached) {
+                    return null;
+                }
+
+                const parsed = JSON.parse(cached);
+                return Array.isArray(parsed) ? parsed : null;
+            } catch (error) {
+                return null;
+            }
+        };
+
+        const writeCachedGrowthStages = function (growthStages) {
+            try {
+                sessionStorage.setItem(growthCacheKey, JSON.stringify(growthStages));
+            } catch (error) {
+                // Ignore cache write failures.
+            }
+        };
+
+        const renderPenOptions = function (pens) {
+            if (! Array.isArray(pens)) {
+                return;
+            }
+
+            const options = pens
+                .map(function (pen) {
+                    const penCode = String(pen.pen_code ?? '').trim();
+                    const penName = String(pen.pen_name ?? '').trim();
+                    if (penCode === '' || penName === '') {
+                        return '';
+                    }
+
+                    return `<option value="${penCode}">${penName} (${penCode})</option>`;
+                })
+                .join('');
+
+            penSelect.innerHTML = '<option value="">Select pen</option>' + options;
+        };
+
+        const readCachedPens = function () {
+            try {
+                const cached = sessionStorage.getItem(pensCacheKey);
+                if (! cached) {
+                    return null;
+                }
+
+                const parsed = JSON.parse(cached);
+                return Array.isArray(parsed) ? parsed : null;
+            } catch (error) {
+                return null;
+            }
+        };
+
+        const writeCachedPens = function (pens) {
+            try {
+                sessionStorage.setItem(pensCacheKey, JSON.stringify(pens));
+            } catch (error) {
+                // Ignore cache write failures.
+            }
+        };
+
+        const cachedGrowthStages = readCachedGrowthStages();
+        if (Array.isArray(cachedGrowthStages) && cachedGrowthStages.length > 0) {
+            renderSelectOptions(cachedGrowthStages);
+            renderPresets(cachedGrowthStages);
+        }
+
+        const cachedPens = readCachedPens();
+        if (Array.isArray(cachedPens) && cachedPens.length > 0) {
+            renderPenOptions(cachedPens);
+        }
+
+        fetch(growthApiUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+        })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (payload) {
+                const growthStages = Array.isArray(payload?.data) ? payload.data : [];
+                if (growthStages.length === 0) {
+                    presetContainer.innerHTML = '<span class="text-xs text-slate-500">No growth stages found.</span>';
+                    return;
+                }
+
+                renderSelectOptions(growthStages);
+                renderPresets(growthStages);
+                writeCachedGrowthStages(growthStages);
+            })
+            .catch(function () {
+                presetContainer.innerHTML = '<span class="text-xs text-rose-600">Unable to load growth stages.</span>';
+            });
+
+        fetch(pensApiUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+        })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (payload) {
+                const source = payload?.data;
+                const pens = Array.isArray(source?.data) ? source.data : (Array.isArray(source) ? source : []);
+                if (pens.length === 0) {
+                    penSelect.innerHTML = '<option value="">No pens found</option>';
+                    return;
+                }
+
+                renderPenOptions(pens);
+                writeCachedPens(pens);
+            })
+            .catch(function () {
+                penSelect.innerHTML = '<option value="">Unable to load pens</option>';
+            });
+    });
+</script>

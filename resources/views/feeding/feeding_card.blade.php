@@ -46,6 +46,9 @@
         }
 
         feedingSchedulesBody.dataset.bound = '1';
+        const schedulesApiUrl = typeof window.schedulesApiUrl === 'string' && window.schedulesApiUrl !== ''
+            ? window.schedulesApiUrl
+            : null;
 
         const escapeHtml = function (value) {
             return String(value ?? '')
@@ -97,6 +100,11 @@
                 </tr>
             `;
         };
+
+        if (! schedulesApiUrl) {
+            renderMessageRow('Schedules endpoint is not configured. Please contact support.');
+            return;
+        }
 
         fetch(schedulesApiUrl, {
             method: 'GET',

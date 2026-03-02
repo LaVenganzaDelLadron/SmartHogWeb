@@ -28,7 +28,7 @@
                     <p class="mt-2 text-sm text-slate-600">Set up your SMART-HOG profile to start monitoring and managing your system.</p>
                 </div>
 
-                <form id="signupForm" data-firebase-auth="true" method="POST" action="{{ Route::has('signup') ? route('signup') : '#' }}" class="space-y-5">
+                <form id="signupForm" data-firebase-auth="true" method="POST" action="{{ route('web.signup') }}" class="space-y-5">
                     @csrf
                     <div id="signupError" class="hidden rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"></div>
 

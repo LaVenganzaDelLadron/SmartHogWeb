@@ -95,6 +95,9 @@
         stageSelect.dataset.growthBound = '1';
 
         const growthCacheKey = 'smarthog:growth:stages:v1';
+        const growthApiUrl = typeof window.growthApiUrl === 'string' && window.growthApiUrl !== ''
+            ? window.growthApiUrl
+            : null;
 
         const bindPresetActions = function () {
             const presetButtons = presetContainer.querySelectorAll('[data-fill-batch-stage]');
@@ -178,6 +181,11 @@
         if (Array.isArray(cachedGrowthStages) && cachedGrowthStages.length > 0) {
             renderSelectOptions(cachedGrowthStages);
             renderPresets(cachedGrowthStages);
+        }
+
+        if (! growthApiUrl) {
+            presetContainer.innerHTML = '<span class="text-xs text-rose-600">Growth endpoint is not configured.</span>';
+            return;
         }
 
         fetch(growthApiUrl, {

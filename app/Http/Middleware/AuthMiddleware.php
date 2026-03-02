@@ -16,7 +16,10 @@ class AuthMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! Auth::check()) {
+        $isAuthenticated = Auth::check()
+            || ($request->hasSession() && $request->session()->get('auth.logged_in') === true);
+
+        if (! $isAuthenticated) {
             return redirect()
                 ->route('show.login')
                 ->with('error', 'Please login first');

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\SignupRequest;
 use App\Support\Concerns\ResolvesGatewayUrl;
+use App\Support\Handler\HandlerFailure;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -16,6 +17,7 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
+    use HandlerFailure;
     use ResolvesGatewayUrl;
 
     public function showSignup(): View
@@ -85,6 +87,10 @@ class AuthController extends Controller
 
         $payload = $response->json();
         $message = $this->extractMessage($payload, 'Login Successfully');
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+            $request->session()->put('auth.logged_in', true);
+        }
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -120,8 +126,11 @@ class AuthController extends Controller
         $payload = $response->json();
         $message = $this->extractMessage($payload, 'Logout Successfully');
         Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        if ($request->hasSession()) {
+            $request->session()->forget('auth.logged_in');
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -134,60 +143,5 @@ class AuthController extends Controller
         return redirect()
             ->route('show.login')
             ->with('success', $message);
-    }
-
-    private function handleApiFailure(Request $request, int $status, mixed $payload, string $fallbackMessage): JsonResponse|RedirectResponse
-    {
-        $message = $this->extractMessage($payload, $fallbackMessage);
-
-        if ($request->expectsJson()) {
-            return response()->json([
-                'ok' => false,
-                'message' => $message,
-                'errors' => $payload,
-            ], $status);
-        }
-
-        return back()
-            ->withInput($request->except('password', 'password_confirmation'))
-            ->withErrors(['auth' => $message]);
-    }
-
-    private function handleGatewayFailure(Request $request, string $message): JsonResponse|RedirectResponse
-    {
-        if ($request->expectsJson()) {
-            return response()->json([
-                'ok' => false,
-                'message' => $message,
-            ], 503);
-        }
-
-        return back()
-            ->withInput($request->except('password', 'password_confirmation'))
-            ->withErrors(['auth' => $message]);
-    }
-
-    private function extractMessage(mixed $payload, string $fallbackMessage): string
-    {
-        if (is_array($payload)) {
-            $message = $payload['message'] ?? null;
-            if (is_string($message) && $message !== '') {
-                return $message;
-            }
-
-            $firstValue = reset($payload);
-            if (is_array($firstValue)) {
-                $firstItem = $firstValue[0] ?? null;
-                if (is_string($firstItem) && $firstItem !== '') {
-                    return $firstItem;
-                }
-            }
-
-            if (is_string($firstValue) && $firstValue !== '') {
-                return $firstValue;
-            }
-        }
-
-        return $fallbackMessage;
     }
 }

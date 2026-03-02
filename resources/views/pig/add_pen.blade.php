@@ -20,17 +20,16 @@
                 </a>
             </div>
 
-            <div id="pen-form-feedback" class="mt-4 hidden rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800"></div>
-
-            <form id="pig-pen-form" method="POST" class="mt-6 space-y-4">
+            <form id="pig-pen-form" action="{{ route('api.pens.add') }}" method="POST" class="mt-6 space-y-4">
                 @csrf
                 
                 <section class="rounded-2xl border border-slate-200 bg-slate-50/60 p-3">
                     <p class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Quick Select</p>
                     <div class="mt-2 flex flex-wrap gap-2">
-                        <button type="button" data-fill-pen-capacity="20" class="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50">20 pigs</button>
-                        <button type="button" data-fill-pen-capacity="30" class="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50">30 pigs</button>
-                        <button type="button" data-fill-pen-capacity="40" class="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50">40 pigs</button>
+                        <button type="button" data-fill-pen-capacity="10" class="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50" onclick="quickSelectCapacity(1)">10 pigs</button>
+                        <button type="button" data-fill-pen-capacity="20" class="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50" onclick="quickSelectCapacity(2)">20 pigs</button>
+                        <button type="button" data-fill-pen-capacity="30" class="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50" onclick="quickSelectCapacity(3)">30 pigs</button>
+                        <button type="button" data-fill-pen-capacity="40" class="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50" onclick="quickSelectCapacity(4)">40 pigs</button>
                     </div>
                 </section>
 
@@ -59,3 +58,104 @@
         </div>
     </div>
 </div>
+<script>
+    function quickSelectCapacity(capacity)
+    {
+        const values = {
+            1: 10,
+            2: 20,
+            3: 30,
+            4: 40,
+        };
+
+        const capacityInput = document.getElementById('pen-capacity');
+        if (capacityInput && values[capacity]) {
+            capacityInput.value = values[capacity];
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const penForm = document.getElementById('pig-pen-form');
+
+        if (! penForm || penForm.dataset.bound === '1') {
+            return;
+        }
+
+        penForm.dataset.bound = '1';
+
+        const showFeedback = function (message, isError = false) {
+            if (isError && typeof window.showWarningAlert === 'function') {
+                window.showWarningAlert({
+                    title: 'Add Pen Failed',
+                    message: message,
+                    durationMs: 3200,
+                });
+                return;
+            }
+
+            if (! isError && typeof window.showSuccessAlert === 'function') {
+                window.showSuccessAlert({
+                    title: 'Pen Added',
+                    message: message,
+                    durationMs: 2400,
+                });
+            }
+        };
+
+        const setSubmitting = function (button, submitting) {
+            if (! (button instanceof HTMLButtonElement)) {
+                return;
+            }
+
+            button.disabled = submitting;
+            button.classList.toggle('opacity-70', submitting);
+            button.classList.toggle('cursor-not-allowed', submitting);
+        };
+
+        penForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const payload = {
+                pen_name: String(document.getElementById('pen-name')?.value || '').trim(),
+                capacity: Number(document.getElementById('pen-capacity')?.value || 0),
+                status: 'available',
+                notes: String(document.getElementById('pen-notes')?.value || '').trim(),
+            };
+
+            const submitButton = penForm.querySelector('button[type="submit"]');
+            setSubmitting(submitButton, true);
+
+            try {
+                const response = await fetch('{{ route('api.pens.add') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload),
+                });
+
+                const result = await response.json();
+                if (! response.ok || ! result?.ok) {
+                    const errorMessage = typeof result?.message === 'string' && result.message.trim() !== ''
+                        ? result.message
+                        : 'Failed to add pen. Please try again.';
+
+                    showFeedback(errorMessage, true);
+                    return;
+                }
+
+                showFeedback(result.message || 'Pen added successfully.');
+                penForm.reset();
+            } catch (error) {
+                showFeedback('Unable to connect right now. Please try again.', true);
+            } finally {
+                setSubmitting(submitButton, false);
+            }
+        });
+    });
+
+</script>

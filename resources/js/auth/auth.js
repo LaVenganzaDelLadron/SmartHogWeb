@@ -178,7 +178,7 @@ export async function loginUser({ email, password }) {
     }
 
     const firebaseLoginPromise = signInWithEmailAndPassword(auth, email, password);
-    const apiLoginPromise = callLaravelAuth('/api/login', {
+    const apiLoginPromise = callLaravelAuth('/login', {
         email,
         password,
     }, 'Invalid email or password.');

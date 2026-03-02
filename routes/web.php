@@ -2,8 +2,6 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Dashboard\DashboardController;
-use App\Http\Controllers\Feeding\FeedingController;
-use App\Http\Controllers\Report\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -13,10 +11,15 @@ Route::get('/', function () {
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('show.login');
 Route::get('/signup', [AuthController::class, 'showSignup'])->name('show.signup');
+
+Route::post('/login', [AuthController::class, 'login'])->name('web.login');
+Route::post('/signup', [AuthController::class, 'signup'])->name('web.signup');
 Route::post('/logout', [AuthController::class, 'logout'])->name('web.logout');
 
-Route::get('/home', [DashboardController::class, 'showDashboard'])->name('show.dashboard');
-Route::get('/pig', [DashboardController::class, 'showPigManagement'])->name('show.pig');
-Route::get('/feeding', [DashboardController::class, 'showFeedingManagement'])->name('show.feeding');
-Route::get('/monitor', [DashboardController::class, 'showMonitorManagement'])->name('show.monitor');
-Route::get('/reports', [DashboardController::class, 'showReports'])->name('reports.index');
+Route::middleware(['auth.custom'])->group(function () {
+    Route::get('/home', [DashboardController::class, 'showDashboard'])->name('show.dashboard');
+    Route::get('/pig', [DashboardController::class, 'showPigManagement'])->name('show.pig');
+    Route::get('/feeding', [DashboardController::class, 'showFeedingManagement'])->name('show.feeding');
+    Route::get('/monitor', [DashboardController::class, 'showMonitorManagement'])->name('show.monitor');
+    Route::get('/reports', [DashboardController::class, 'showReports'])->name('reports.index');
+});

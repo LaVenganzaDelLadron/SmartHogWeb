@@ -20,7 +20,7 @@ class PenRequest extends FormRequest
             'pen_code' => ['nullable', 'string', 'max:20', 'regex:/^[A-Za-z0-9-]+$/'],
             'pen_name' => ['required', 'string', 'max:255'],
             'capacity' => ['required', 'integer', 'min:1'],
-            'status' => ['nullable', 'string', 'in:available,occupied,maintenance'],
+            'status' => ['nullable', 'string', 'in:available,occupied'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'date' => ['nullable', 'date'],
         ];
@@ -36,7 +36,7 @@ class PenRequest extends FormRequest
             'capacity.required' => 'Capacity is required.',
             'capacity.integer' => 'Capacity must be a whole number.',
             'capacity.min' => 'Capacity must be at least 1.',
-            'status.in' => 'Status must be available, occupied, or maintenance.',
+            'status.in' => 'Status must be available or occupied.',
             'date.date' => 'Date must be a valid date.',
         ];
     }
