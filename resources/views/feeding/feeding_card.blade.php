@@ -13,7 +13,7 @@
                     <th class="px-4 py-3 font-semibold">Feeding ID</th>
                     <th class="px-4 py-3 font-semibold">Batch ID</th>
                     <th class="px-4 py-3 font-semibold">Assigned Pen</th>
-                    <th class="px-4 py-3 font-semibold">Feeding Type</th>
+                    <th class="px-4 py-3 font-semibold">Growth Stage</th>
                     <th class="px-4 py-3 font-semibold">Date</th>
                     <th class="px-4 py-3 font-semibold">Time</th>
                     <th class="px-4 py-3 font-semibold">Quantity</th>
