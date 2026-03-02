@@ -47,8 +47,6 @@
 
         feedingSchedulesBody.dataset.bound = '1';
 
-        const schedulesApiUrl = @js(route('feeding.schedules.index'));
-
         const escapeHtml = function (value) {
             return String(value ?? '')
                 .replaceAll('&', '&amp;')

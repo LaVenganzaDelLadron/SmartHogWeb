@@ -23,16 +23,3 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
 
 // Adding a pen
-Route::get('/pens', [GetPenController::class, 'getAll'])->name('pens.index');
-Route::get('/growth', [GetGrowthController::class, 'getAll'])->name('growth.index');
-Route::get('/batches', [GetBatchController::class, 'getAll'])->name('batches.index');
-Route::get('/batches/total-pigs', [GetBatchController::class, 'getTotalPigs'])->name('batches.total_pigs');
-Route::get('/batches/active', [GetBatchController::class, 'getActiveBatches'])->name('batches.active');
-Route::post('/batches/add', [AddBatchController::class, 'addBatch'])->name('batches.add');
-Route::post('/pens/add', [AddPenController::class, 'addPen'])->name('pens.add');
-Route::put('/pens/{penCode}', [UpdatePenController::class, 'updatePen'])->name('pens.update');
-Route::delete('/pens/{penCode}', [DeletePenController::class, 'deletePen'])->name('pens.delete');
-
-// Feeding/Notification Routes
-Route::get('/feeding/schedules', [FeedingController::class, 'listSchedules'])->name('feeding.schedules.index');
-Route::get('/notifications', [NotificationController::class, 'list'])->name('notifications.list');

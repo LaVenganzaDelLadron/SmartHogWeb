@@ -24,7 +24,7 @@
                 {{ $errors->first('batch') }}
             </div>
 
-            <form id="add-batch-form" method="POST" action="{{ route('web.batches.add') }}" class="mt-6 space-y-5">
+            <form id="add-batch-form" method="POST" class="mt-6 space-y-5">
                 @csrf
                 <section class="rounded-2xl border border-slate-200 bg-slate-50/60 p-3">
                     <p class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Quick Presets</p>
@@ -94,7 +94,6 @@
 
         stageSelect.dataset.growthBound = '1';
 
-        const growthApiUrl = @js(route('growth.index'));
         const growthCacheKey = 'smarthog:growth:stages:v1';
 
         const bindPresetActions = function () {
