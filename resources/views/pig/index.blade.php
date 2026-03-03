@@ -155,6 +155,7 @@
 
         @include('pig.add_pen')
         @include('pig.add_pig')
+        @include('pig.update_batch')
         @include('pig.update_pen')
         @include('pig.delete_pen')
         @include('pig.delete_batch')

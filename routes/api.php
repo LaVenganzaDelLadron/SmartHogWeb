@@ -22,4 +22,5 @@ Route::get('/growth/all', [GetGrowthController::class, 'getAllGrowthStage'])->na
 // Batch Routes
 Route::post('/batch/add', [BatchController::class, 'addBatch'])->name('api.batch.add');
 Route::get('/batch/all', [BatchController::class, 'getAllBatch'])->name('api.batch.all');
+Route::put('/batch/update/{batch_code}', [BatchController::class, 'updateBatch'])->name('api.batch.update');
 Route::delete('/batch/delete/{batch_code}', [BatchController::class, 'deleteBatch'])->name('api.batch.delete');

@@ -154,6 +154,144 @@ class BatchController extends Controller
         ]);
     }
 
+    public function updateBatch(Request $request, string $batch_code)
+    {
+        $notes = $request->string('health_notes')->trim()->toString();
+        if ($notes === '') {
+            $notes = $request->string('notes')->trim()->toString();
+        }
+        if ($notes === '') {
+            $notes = 'No notes';
+        }
+
+        $batchName = $request->string('batch_name')->trim()->toString();
+        $batchCode = $request->string('batch_code')->trim()->toString();
+        $pigCount = $request->integer('pig_count');
+
+        $penCode = $request->string('pen_code')->trim()->toString();
+        if ($penCode === '') {
+            $penCode = $request->string('assigned_pen')->trim()->toString();
+        }
+
+        $growthStageCode = $request->string('growth_stage_code')->trim()->toString();
+        if ($growthStageCode === '') {
+            $growthStageName = $request->string('growth_stage')->trim()->toString();
+            if ($growthStageName !== '') {
+                $growthStageCode = (string) (GrowthStage::query()
+                    ->where('growth_name', $growthStageName)
+                    ->value('growth_code') ?? '');
+            }
+        }
+
+        $existingBatches = $this->fetchExistingBatches();
+        $existingPens = $this->fetchExistingPens();
+
+        $batchNameExists = collect($existingBatches)
+            ->contains(function ($batch) use ($batchName): bool {
+                $existingName = is_array($batch) ? (string) ($batch['batch_name'] ?? '') : '';
+
+                return $existingName !== '' && strcasecmp($existingName, $batchName) === 0;
+            });
+        if ($batchName !== '' && $batchNameExists) {
+            return $this->handleApiFailure(
+                $request,
+                422,
+                ['message' => 'Batch name already exists. Please use a different name.'],
+                'Batch name already exists. Please use a different name.'
+            );
+        }
+
+        $batchCodeExists = collect($existingBatches)
+            ->contains(function ($batch) use ($batchCode): bool {
+                $existingCode = is_array($batch) ? (string) ($batch['batch_code'] ?? '') : '';
+
+                return $existingCode !== '' && strcasecmp($existingCode, $batchCode) === 0;
+            });
+        if ($batchCode !== '' && $batchCodeExists) {
+            return $this->handleApiFailure(
+                $request,
+                422,
+                ['message' => 'Batch code already exists. Please use a different code.'],
+                'Batch code already exists. Please use a different code.'
+            );
+        }
+
+        $penData = collect($existingPens)
+            ->first(function ($pen) use ($penCode): bool {
+                $existingPenCode = is_array($pen) ? (string) ($pen['pen_code'] ?? '') : '';
+
+                return $existingPenCode !== '' && strcasecmp($existingPenCode, $penCode) === 0;
+            });
+        $selectedPenCapacity = (int) (is_array($penData) ? ($penData['capacity'] ?? 0) : 0);
+
+        $allocatedPigsInPen = collect($existingBatches)
+            ->filter(function ($batch) use ($penCode): bool {
+                $batchPenCode = is_array($batch) ? (string) ($batch['pen_code_id'] ?? '') : '';
+
+                return $batchPenCode !== '' && strcasecmp($batchPenCode, $penCode) === 0;
+            })
+            ->sum(function ($batch): int {
+                return (int) (is_array($batch) ? ($batch['no_of_pigs'] ?? 0) : 0);
+            });
+
+        if ($selectedPenCapacity > 0) {
+            $remainingCapacity = $selectedPenCapacity - $allocatedPigsInPen;
+
+            if ($remainingCapacity <= 0) {
+                return $this->handleApiFailure(
+                    $request,
+                    422,
+                    ['message' => 'Selected pen is already full. Please choose another pen.'],
+                    'Selected pen is already full. Please choose another pen.'
+                );
+            }
+
+            if ($pigCount > $remainingCapacity) {
+                return $this->handleApiFailure(
+                    $request,
+                    422,
+                    ['message' => "Selected pen only has {$remainingCapacity} remaining capacity."],
+                    "Selected pen only has {$remainingCapacity} remaining capacity."
+                );
+            }
+        }
+
+        try {
+            $response = Http::acceptJson()
+                ->asJson()
+                ->timeout(15)
+                ->connectTimeout(5)
+                ->post($this->endpointUrl('/batch/add/'), [
+                    'batch_code' => $batch_code,
+                    'batch_name' => $batchName,
+                    'no_of_pigs' => $pigCount,
+                    'current_age' => $request->integer('current_age_days'),
+                    'avg_weight' => $request->float('avg_weight'),
+                    'notes' => $notes,
+                    'pen_code' => $penCode,
+                    'growth_stage_code' => $growthStageCode,
+                    'pen_code_id' => $penCode,
+                    'growth_stage_id' => $growthStageCode,
+                    'date' => $request->date('date')?->toDateTimeString() ?? now()->toDateTimeString(),
+                ]);
+        } catch (ConnectionException) {
+            return $this->handleGatewayFailure($request, 'Batch service is currently unavailable. Please try again.');
+        }
+
+        if (! $response->successful()) {
+            return $this->handleApiFailure($request, $response->status(), $response->json(), 'Failed to add batch. Please try again.');
+        }
+
+        $payload = $response->json();
+        $message = $this->extractMessage($payload, 'Batch added successfully');
+
+        return response()->json([
+            'ok' => true,
+            'message' => $message,
+            'data' => $payload,
+        ]);
+    }
+
     public function getAllBatch(Request $request): JsonResponse|RedirectResponse
     {
         try {

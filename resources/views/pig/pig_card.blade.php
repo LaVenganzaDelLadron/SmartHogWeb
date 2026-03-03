@@ -131,14 +131,50 @@
                         <td class="px-4 py-3 text-slate-700">${hasAlert ? 'Check age data' : 'None'}</td>
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-2">
-                                <button type="button" data-delete-batch="${escapeHtml(batchCode)}" data-delete-batch-name="${escapeHtml(item.batch_name ?? 'Unknown Batch')}" data-delete-batch-count="${escapeHtml(pigs)}" class="rounded-lg border border-rose-200 px-2.5 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50">Delete</button>
+                                <button 
+                                    type="button"
+                                    data-update-batch="${escapeHtml(batchCode)}"
+                                    data-update-batch-name="${escapeHtml(item.batch_name ?? 'Unknown Batch')}"
+                                    data-update-batch-count="${escapeHtml(pigs)}"
+                                    class="flex items-center gap-1 rounded-lg border border-emerald-200 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50">
+
+                                    <!-- Pencil Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                        class="h-4 w-4" 
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        stroke="currentColor" 
+                                        stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" 
+                                            d="M11 5h2m-6 14h12a2 2 0 002-2V9l-6-6H7a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg> 
+                                </button>
+
+                                <button 
+                                    type="button"
+                                    data-delete-batch="${escapeHtml(batchCode)}"
+                                    data-delete-batch-name="${escapeHtml(item.batch_name ?? 'Unknown Batch')}"
+                                    data-delete-batch-count="${escapeHtml(pigs)}"
+                                    class="flex items-center gap-1 rounded-lg border border-rose-200 px-2.5 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50">
+
+                                    <!-- Trash Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" 
+                                        class="h-4 w-4" 
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        stroke="currentColor" 
+                                        stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" 
+                                            d="M19 7l-1 14H6L5 7m5-3h4m-6 3h8m-1 0V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3" />
+                                    </svg>
+                                </button>
                             </div>
                         </td>
                     </tr>
                 `;
             }).join('');
 
-            tableBody.innerHTML = rows + '<tr id="pig-batches-no-results" class="hidden"><td colspan="8" class="px-4 py-8 text-center text-sm text-slate-500">No matching pig batches found.</td></tr>';
+        tableBody.innerHTML = rows + '<tr id="pig-batches-no-results" class="hidden"><td colspan="8" class="px-4 py-8 text-center text-sm text-slate-500">No matching pig batches found.</td></tr>';
         };
 
         const applyFilters = function () {
