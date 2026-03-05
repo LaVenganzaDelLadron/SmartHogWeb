@@ -65,6 +65,8 @@
         const deleteBatchCountLabel = document.getElementById('delete-batch-count');
         const confirmDeleteBatchButton = document.getElementById('confirm-delete-batch-button');
         const updateBatchModal = document.getElementById('pig-update-batch-modal');
+        const updateBatchForm = document.getElementById('pig-update-batch-form');
+        const updateBatchFeedback = document.getElementById('update-batch-feedback');
         const updateBatchCodePreview = document.getElementById('update-batch-code-preview');
         const updateBatchStagePreview = document.getElementById('update-batch-stage-preview');
         const updateBatchPenPreview = document.getElementById('update-batch-pen-preview');
@@ -79,6 +81,7 @@
         const updateBatchWeightInput = document.getElementById('update-batch-weight');
         const updateBatchPenInput = document.getElementById('update-batch-pen');
         const updateBatchNotesInput = document.getElementById('update-batch-notes');
+        const confirmUpdateBatchButton = document.getElementById('confirm-update-batch-button');
 
         if (! tableBody || ! searchInput || ! stageFilter || tableBody.dataset.bound === '1') {
             return;
@@ -87,6 +90,7 @@
         tableBody.dataset.bound = '1';
         const endpoint = '{{ route('api.batch.all') }}';
         const deleteEndpointTemplate = '{{ route('api.batch.delete', ['batch_code' => '__BATCH_CODE__']) }}';
+        const updateEndpointTemplate = '{{ route('api.batch.update', ['batch_code' => '__BATCH_CODE__']) }}';
         const growthApiUrl = '{{ route('api.growth.all') }}';
         const pensApiUrl = '{{ route('api.pens.all') }}';
         const csrfToken = '{{ csrf_token() }}';
@@ -94,6 +98,7 @@
         const pensCacheKey = 'smarthog:pens:all:v1';
         let batchItems = [];
         let pendingDeleteBatchCode = '';
+        let pendingUpdateBatchCode = '';
         let growthStagesPromise = null;
         let pensPromise = null;
 
@@ -271,6 +276,11 @@
 
             updateBatchModal.classList.add('hidden');
             updateBatchModal.setAttribute('aria-hidden', 'true');
+            pendingUpdateBatchCode = '';
+            if (updateBatchFeedback instanceof HTMLElement) {
+                updateBatchFeedback.classList.add('hidden');
+                updateBatchFeedback.textContent = '';
+            }
         };
 
         const syncGrowthStageCode = function () {
@@ -440,6 +450,7 @@
             const avgWeight = Number(batch.avg_weight ?? 0);
             const penCode = String(batch.pen_code_id ?? batch.pen_code ?? '').trim();
             const notes = String(batch.notes ?? '').trim();
+            pendingUpdateBatchCode = batchCode;
 
             if (updateBatchCodePreview instanceof HTMLElement) {
                 updateBatchCodePreview.textContent = batchCode || 'N/A';
@@ -491,9 +502,107 @@
             if (updateBatchPenCodeInput instanceof HTMLInputElement && updateBatchPenCodeInput.value.trim() === '') {
                 updateBatchPenCodeInput.value = penCode;
             }
+            if (updateBatchFeedback instanceof HTMLElement) {
+                updateBatchFeedback.classList.add('hidden');
+                updateBatchFeedback.textContent = '';
+            }
 
             updateBatchModal.classList.remove('hidden');
             updateBatchModal.setAttribute('aria-hidden', 'false');
+        };
+
+        const updateBatchRecord = function (batchCode, payload) {
+            if (! batchCode) {
+                return Promise.resolve(false);
+            }
+
+            const endpointUrl = updateEndpointTemplate.replace('__BATCH_CODE__', encodeURIComponent(batchCode));
+
+            return fetch(endpointUrl, {
+                method: 'PUT',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken,
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(payload),
+            })
+                .then(function (response) {
+                    return response.json().then(function (resultPayload) {
+                        return { ok: response.ok, payload: resultPayload };
+                    });
+                })
+                .then(function (result) {
+                    if (! result.ok || ! result.payload?.ok) {
+                        const message = typeof result.payload?.message === 'string' && result.payload.message.trim() !== ''
+                            ? result.payload.message
+                            : 'Failed to update batch. Please try again.';
+
+                        if (updateBatchFeedback instanceof HTMLElement) {
+                            updateBatchFeedback.classList.remove('hidden');
+                            updateBatchFeedback.textContent = message;
+                        }
+
+                        if (typeof window.showWarningAlert === 'function') {
+                            window.showWarningAlert({
+                                title: 'Update Failed',
+                                message: message,
+                                durationMs: 3200,
+                            });
+                        }
+                        return false;
+                    }
+
+                    batchItems = batchItems.map(function (item) {
+                        if (String(item.batch_code ?? '').trim().toLowerCase() !== String(batchCode).trim().toLowerCase()) {
+                            return item;
+                        }
+
+                        return {
+                            ...item,
+                            batch_code: payload.batch_code,
+                            batch_name: payload.batch_name,
+                            no_of_pigs: payload.pig_count,
+                            current_age: payload.current_age_days,
+                            growth_name: payload.growth_stage,
+                            growth_stage_id: payload.growth_stage_code,
+                            avg_weight: payload.avg_weight,
+                            pen_code: payload.pen_code,
+                            pen_code_id: payload.pen_code,
+                            notes: payload.health_notes,
+                        };
+                    });
+
+                    renderStageOptions(batchItems);
+                    applyFilters();
+                    closeUpdateBatchModal();
+
+                    if (typeof window.showSuccessAlert === 'function') {
+                        window.showSuccessAlert({
+                            title: 'Batch Updated',
+                            message: result.payload?.message || 'Batch updated successfully.',
+                            durationMs: 2400,
+                        });
+                    }
+                    return true;
+                })
+                .catch(function () {
+                    const fallbackMessage = 'Unable to update batch right now. Please try again.';
+                    if (updateBatchFeedback instanceof HTMLElement) {
+                        updateBatchFeedback.classList.remove('hidden');
+                        updateBatchFeedback.textContent = fallbackMessage;
+                    }
+                    if (typeof window.showWarningAlert === 'function') {
+                        window.showWarningAlert({
+                            title: 'Update Failed',
+                            message: fallbackMessage,
+                            durationMs: 3200,
+                        });
+                    }
+                    return false;
+                });
         };
 
         const deleteBatchRecord = function (batchCode) {
@@ -654,6 +763,37 @@
         }
         if (updateBatchPenInput instanceof HTMLSelectElement) {
             updateBatchPenInput.addEventListener('change', syncPenCode);
+        }
+        if (updateBatchForm instanceof HTMLFormElement && confirmUpdateBatchButton instanceof HTMLButtonElement) {
+            updateBatchForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                if (pendingUpdateBatchCode === '') {
+                    return;
+                }
+
+                const payload = {
+                    batch_code: String(updateBatchCodeInput instanceof HTMLInputElement ? updateBatchCodeInput.value : '').trim(),
+                    batch_name: String(updateBatchNameInput instanceof HTMLInputElement ? updateBatchNameInput.value : '').trim(),
+                    pig_count: Number(updateBatchPigCountInput instanceof HTMLInputElement ? updateBatchPigCountInput.value : 0),
+                    current_age_days: Number(updateBatchCurrentAgeInput instanceof HTMLInputElement ? updateBatchCurrentAgeInput.value : 0),
+                    growth_stage: String(updateBatchStageInput instanceof HTMLSelectElement ? updateBatchStageInput.value : '').trim(),
+                    growth_stage_code: String(updateBatchGrowthStageCodeInput instanceof HTMLInputElement ? updateBatchGrowthStageCodeInput.value : '').trim(),
+                    avg_weight: Number(updateBatchWeightInput instanceof HTMLInputElement ? updateBatchWeightInput.value : 0),
+                    assigned_pen: String(updateBatchPenInput instanceof HTMLSelectElement ? updateBatchPenInput.value : '').trim(),
+                    pen_code: String(updateBatchPenCodeInput instanceof HTMLInputElement ? updateBatchPenCodeInput.value : '').trim(),
+                    health_notes: String(updateBatchNotesInput instanceof HTMLTextAreaElement ? updateBatchNotesInput.value : '').trim(),
+                };
+
+                confirmUpdateBatchButton.disabled = true;
+                confirmUpdateBatchButton.classList.add('cursor-not-allowed', 'opacity-70');
+
+                updateBatchRecord(pendingUpdateBatchCode, payload)
+                    .finally(function () {
+                        confirmUpdateBatchButton.disabled = false;
+                        confirmUpdateBatchButton.classList.remove('cursor-not-allowed', 'opacity-70');
+                    });
+            });
         }
 
         if (confirmDeleteBatchButton instanceof HTMLButtonElement) {
