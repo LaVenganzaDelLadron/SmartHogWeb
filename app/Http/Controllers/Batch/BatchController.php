@@ -154,8 +154,13 @@ class BatchController extends Controller
         ]);
     }
 
-    public function updateBatch(Request $request, string $batch_code)
+    public function updateBatch(Request $request, string $batch_code): JsonResponse|RedirectResponse
     {
+        $normalizedBatchCode = trim($batch_code);
+        if ($normalizedBatchCode === '') {
+            return $this->handleApiFailure($request, 422, ['message' => 'Batch code is required.'], 'Failed to update batch. Please try again.');
+        }
+
         $notes = $request->string('health_notes')->trim()->toString();
         if ($notes === '') {
             $notes = $request->string('notes')->trim()->toString();
@@ -166,6 +171,9 @@ class BatchController extends Controller
 
         $batchName = $request->string('batch_name')->trim()->toString();
         $batchCode = $request->string('batch_code')->trim()->toString();
+        if ($batchCode === '') {
+            $batchCode = $normalizedBatchCode;
+        }
         $pigCount = $request->integer('pig_count');
 
         $penCode = $request->string('pen_code')->trim()->toString();
@@ -187,10 +195,13 @@ class BatchController extends Controller
         $existingPens = $this->fetchExistingPens();
 
         $batchNameExists = collect($existingBatches)
-            ->contains(function ($batch) use ($batchName): bool {
+            ->contains(function ($batch) use ($batchName, $normalizedBatchCode): bool {
                 $existingName = is_array($batch) ? (string) ($batch['batch_name'] ?? '') : '';
+                $existingCode = is_array($batch) ? (string) ($batch['batch_code'] ?? '') : '';
 
-                return $existingName !== '' && strcasecmp($existingName, $batchName) === 0;
+                return $existingName !== ''
+                    && strcasecmp($existingName, $batchName) === 0
+                    && strcasecmp($existingCode, $normalizedBatchCode) !== 0;
             });
         if ($batchName !== '' && $batchNameExists) {
             return $this->handleApiFailure(
@@ -202,10 +213,12 @@ class BatchController extends Controller
         }
 
         $batchCodeExists = collect($existingBatches)
-            ->contains(function ($batch) use ($batchCode): bool {
+            ->contains(function ($batch) use ($batchCode, $normalizedBatchCode): bool {
                 $existingCode = is_array($batch) ? (string) ($batch['batch_code'] ?? '') : '';
 
-                return $existingCode !== '' && strcasecmp($existingCode, $batchCode) === 0;
+                return $existingCode !== ''
+                    && strcasecmp($existingCode, $batchCode) === 0
+                    && strcasecmp($existingCode, $normalizedBatchCode) !== 0;
             });
         if ($batchCode !== '' && $batchCodeExists) {
             return $this->handleApiFailure(
@@ -225,10 +238,13 @@ class BatchController extends Controller
         $selectedPenCapacity = (int) (is_array($penData) ? ($penData['capacity'] ?? 0) : 0);
 
         $allocatedPigsInPen = collect($existingBatches)
-            ->filter(function ($batch) use ($penCode): bool {
+            ->filter(function ($batch) use ($penCode, $normalizedBatchCode): bool {
                 $batchPenCode = is_array($batch) ? (string) ($batch['pen_code_id'] ?? '') : '';
+                $currentCode = is_array($batch) ? (string) ($batch['batch_code'] ?? '') : '';
 
-                return $batchPenCode !== '' && strcasecmp($batchPenCode, $penCode) === 0;
+                return $batchPenCode !== ''
+                    && strcasecmp($batchPenCode, $penCode) === 0
+                    && strcasecmp($currentCode, $normalizedBatchCode) !== 0;
             })
             ->sum(function ($batch): int {
                 return (int) (is_array($batch) ? ($batch['no_of_pigs'] ?? 0) : 0);
@@ -261,8 +277,8 @@ class BatchController extends Controller
                 ->asJson()
                 ->timeout(15)
                 ->connectTimeout(5)
-                ->post($this->endpointUrl('/batch/add/'), [
-                    'batch_code' => $batch_code,
+                ->put($this->endpointUrl('/batch/update/'.rawurlencode($normalizedBatchCode).'/'), [
+                    'batch_code' => $batchCode,
                     'batch_name' => $batchName,
                     'no_of_pigs' => $pigCount,
                     'current_age' => $request->integer('current_age_days'),
@@ -279,11 +295,11 @@ class BatchController extends Controller
         }
 
         if (! $response->successful()) {
-            return $this->handleApiFailure($request, $response->status(), $response->json(), 'Failed to add batch. Please try again.');
+            return $this->handleApiFailure($request, $response->status(), $response->json(), 'Failed to update batch. Please try again.');
         }
 
         $payload = $response->json();
-        $message = $this->extractMessage($payload, 'Batch added successfully');
+        $message = $this->extractMessage($payload, 'Batch updated successfully');
 
         return response()->json([
             'ok' => true,
