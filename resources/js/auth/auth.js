@@ -147,7 +147,7 @@ export async function signupUser({ name, email, password, confirmPassword }) {
         return user;
     })();
 
-    const apiSignupPromise = callLaravelAuth('/api/signup', {
+    const apiSignupPromise = callLaravelAuth('/signup', {
         name,
         email,
         password,

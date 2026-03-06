@@ -10,17 +10,27 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-// Pen Routes
-Route::post('/pens/add', [PenController::class, 'addPen'])->name('api.pens.add');
-Route::get('/pen/all', [PenController::class, 'getAllPen'])->name('api.pens.all');
-Route::delete('/pen/delete/{pen_code}', [PenController::class, 'deletePen'])->name('api.pens.delete');
-Route::put('/pen/update/{pen_code}', [PenController::class, 'updatePen'])->name('api.pens.update');
+
+Route::prefix('pens')->group(function () {
+    // Pen Routes
+    Route::post('/add', [PenController::class, 'addPen'])->name('api.pens.add');
+    Route::get('/all', [PenController::class, 'getAllPen'])->name('api.pens.all');
+    Route::put('/update/{pen_code}', [PenController::class, 'updatePen'])->name('api.pens.update');
+    Route::delete('/delete/{pen_code}', [PenController::class, 'deletePen'])->name('api.pens.delete');
+});
+
+Route::prefix('batch')->group(function () {
+    // Batch Routes
+    Route::post('/add', [BatchController::class, 'addBatch'])->name('api.batch.add');
+    Route::get('/all', [BatchController::class, 'getAllBatch'])->name('api.batch.all');
+    Route::get('/total-pigs', [BatchController::class, 'getTotalPigs'])->name('api.batch.total-pigs');
+    Route::put('/update/{batch_code}', [BatchController::class, 'updateBatch'])->name('api.batch.update');
+    Route::delete('/delete/{batch_code}', [BatchController::class, 'deleteBatch'])->name('api.batch.delete');
+});
+
+
+
 
 // Growth Stage
 Route::get('/growth/all', [GetGrowthController::class, 'getAllGrowthStage'])->name('api.growth.all');
 
-// Batch Routes
-Route::post('/batch/add', [BatchController::class, 'addBatch'])->name('api.batch.add');
-Route::get('/batch/all', [BatchController::class, 'getAllBatch'])->name('api.batch.all');
-Route::put('/batch/update/{batch_code}', [BatchController::class, 'updateBatch'])->name('api.batch.update');
-Route::delete('/batch/delete/{batch_code}', [BatchController::class, 'deleteBatch'])->name('api.batch.delete');

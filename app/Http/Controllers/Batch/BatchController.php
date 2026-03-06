@@ -359,8 +359,47 @@ class BatchController extends Controller
             'ok' => true,
             'message' => $message,
             'count' => count($data),
+            'total_pigs' => self::sumTotalPigs($data),
             'data' => $data,
         ]);
+    }
+
+    public function getTotalPigs(Request $request): JsonResponse|RedirectResponse 
+    {
+        try {
+            $response = Http::acceptJson()
+                ->asJson()
+                ->timeout(15)
+                ->connectTimeout(5)
+                ->get($this->endpointUrl('/batch/total-pigs/'));
+        } catch (ConnectionException) {
+            return $this->handleGatewayFailure($request, 'Batch service is currently unavailable. Please try again.');
+        }
+
+        if (! $response->successful()) {
+            return $this->handleApiFailure(
+                $request,
+                $response->status(),
+                $response->json(),
+                'Failed to fetch total pigs. Please try again.'
+            );
+        }
+
+        $payload = $response->json();
+        $message = $this->extractMessage($payload, 'Total pigs fetched successfully');
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => $payload['data'] ?? $payload
+        ]);
+    }
+
+    public static function sumTotalPigs(array $batches): int
+    {
+        return collect($batches)->sum(function ($batch): int {
+            return (int) ((is_array($batch) ? ($batch['no_of_pigs'] ?? 0) : 0));
+        });
     }
 
     public function deleteBatch(Request $request, string $batch_code): JsonResponse|RedirectResponse
@@ -434,4 +473,10 @@ class BatchController extends Controller
 
         return is_array($payload['data'] ?? null) ? $payload['data'] : [];
     }
+
+
+
+
 }
+
+

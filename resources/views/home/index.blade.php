@@ -44,8 +44,8 @@
                             <p class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Total Pigs</p>
                             <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">Normal</span>
                         </div>
-                        <div id="home-total-pigs-skeleton" class="mt-3 h-9 w-24 animate-pulse rounded-lg bg-slate-200"></div>
-                        <p id="home-total-pigs-value" class="mt-3 hidden text-3xl font-semibold text-slate-900">{{ number_format($totalPigs ?? 0) }}</p>
+                        <div id="home-total-pigs-skeleton" class="hidden mt-3 h-9 w-24 animate-pulse rounded-lg bg-slate-200"></div>
+                        <p id="home-total-pigs-value" class="mt-3 text-3xl font-semibold text-slate-900">{{ number_format($totalPigs ?? 0) }}</p>
                         <p id="home-active-batches-note" class="mt-2 text-sm text-slate-600">{{ number_format($activeBatches ?? 0) }} active batches</p>
                     </article>
 
