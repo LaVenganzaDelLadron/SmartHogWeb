@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Batch\BatchController;
 use App\Models\FeedingRecord;
 use App\Models\GrowthStage;
 use App\Models\HealthRecord;
@@ -33,7 +34,7 @@ class DashboardController extends Controller
             ->select(['growth_id', 'growth_name'])
             ->orderBy('growth_id')
             ->get();
-        $batchStats = $this->fetchBatchStatsFromGateway();
+        $batchStats = app(BatchController::class)->fetchBatchStatsFromGateway();
         $totalPigs = $batchStats['totalPigs'];
         $activeBatches = $batchStats['activeBatches'];
 
@@ -57,7 +58,7 @@ class DashboardController extends Controller
             ->select(['growth_id', 'growth_name'])
             ->orderBy('growth_id')
             ->get();
-        $batchStats = $this->fetchBatchStatsFromGateway();
+        $batchStats = app(BatchController::class)->fetchBatchStatsFromGateway();
         $totalPigs = $batchStats['totalPigs'];
         $activeBatches = $batchStats['activeBatches'];
         $pigBatchCards = $this->buildPigBatchCards();
@@ -111,54 +112,7 @@ class DashboardController extends Controller
             'newNotificationsCount' => $newNotificationsCount,
         ]);
     }
-    private function fetchBatchStatsFromGateway(): array
-    {
-        $totalPigs = 0;
-        $activeBatches = 0;
-
-        try {
-            $totalResponse = Http::acceptJson()
-                ->timeout(15)
-                ->connectTimeout(5)
-                ->get($this->endpointUrl('/batch/total-pigs/'));
-
-            if ($totalResponse->successful()) {
-                $totalPayload = $totalResponse->json();
-                if (is_array($totalPayload)) {
-                    if (isset($totalPayload['total_pigs'])) {
-                        $totalPigs = (int) $totalPayload['total_pigs'];
-                    } elseif (isset($totalPayload['data']) && is_array($totalPayload['data']) && isset($totalPayload['data']['total_pigs'])) {
-                        $totalPigs = (int) $totalPayload['data']['total_pigs'];
-                    }
-                }
-            }
-        } catch (ConnectionException) {
-        }
-
-        try {
-            $activeResponse = Http::acceptJson()
-                ->timeout(15)
-                ->connectTimeout(5)
-                ->get($this->endpointUrl('/batch/active/'));
-
-            if ($activeResponse->successful()) {
-                $activePayload = $activeResponse->json();
-                if (is_array($activePayload)) {
-                    if (isset($activePayload['count'])) {
-                        $activeBatches = (int) $activePayload['count'];
-                    } elseif (isset($activePayload['data']) && is_array($activePayload['data'])) {
-                        $activeBatches = count($activePayload['data']);
-                    }
-                }
-            }
-        } catch (ConnectionException) {
-        }
-
-        return [
-            'totalPigs' => $totalPigs,
-            'activeBatches' => $activeBatches,
-        ];
-    }
+    
 
     private function buildPigBatchCards(): Collection
     {
@@ -211,20 +165,6 @@ class DashboardController extends Controller
                 'weight' => number_format((float) ($growthRecord?->avg_weight_kg ?? $batch->avg_weight_kg), 1).' kg',
                 'feeding' => $feedingStatus,
                 'alerts' => $healthAlert,
-            ];
-        });
-    }
-
-    private function buildPenCards(Collection $pens): Collection
-    {
-        return $pens->map(function (Pen $pen): array {
-            return [
-                'pen_id' => $pen->pen_code,
-                'pen_name' => $pen->pen_name,
-                'capacity' => (int) $pen->capacity,
-                'status' => ucfirst((string) $pen->status),
-                'notes' => $pen->notes ?: 'No notes',
-                'record_date' => Carbon::parse($pen->record_date)->format('Y-m-d H:i'),
             ];
         });
     }

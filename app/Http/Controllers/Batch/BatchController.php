@@ -364,14 +364,63 @@ class BatchController extends Controller
         ]);
     }
 
-    public function getTotalPigs(Request $request): JsonResponse|RedirectResponse 
+    public function fetchBatchStatsFromGateway(): array
+    {
+        $totalPigs = 0;
+        $activeBatches = 0;
+
+        try {
+            $totalResponse = Http::acceptJson()
+                ->timeout(15)
+                ->connectTimeout(5)
+                ->get($this->endpointUrl('/batch/total-pigs/'));
+
+            if ($totalResponse->successful()) {
+                $totalPayload = $totalResponse->json();
+                if (is_array($totalPayload)) {
+                    if (isset($totalPayload['total_pigs'])) {
+                        $totalPigs = (int) $totalPayload['total_pigs'];
+                    } elseif (isset($totalPayload['data']) && is_array($totalPayload['data']) && isset($totalPayload['data']['total_pigs'])) {
+                        $totalPigs = (int) $totalPayload['data']['total_pigs'];
+                    }
+                }
+            }
+        } catch (ConnectionException) {
+        }
+
+        try {
+            $activeResponse = Http::acceptJson()
+                ->timeout(15)
+                ->connectTimeout(5)
+                ->get($this->endpointUrl('/batch/active/'));
+
+            if ($activeResponse->successful()) {
+                $activePayload = $activeResponse->json();
+                if (is_array($activePayload)) {
+                    if (isset($activePayload['count'])) {
+                        $activeBatches = (int) $activePayload['count'];
+                    } elseif (isset($activePayload['data']) && is_array($activePayload['data'])) {
+                        $activeBatches = count($activePayload['data']);
+                    }
+                }
+            }
+        } catch (ConnectionException) {
+        }
+
+        return [
+            'totalPigs' => $totalPigs,
+            'activeBatches' => $activeBatches,
+        ];
+    }
+
+    public function getActiveBatch(Request $request): JsonResponse|RedirectResponse
     {
         try {
             $response = Http::acceptJson()
                 ->asJson()
                 ->timeout(15)
                 ->connectTimeout(5)
-                ->get($this->endpointUrl('/batch/total-pigs/'));
+                ->get($this->endpointUrl('/batch/active/'));
         } catch (ConnectionException) {
             return $this->handleGatewayFailure($request, 'Batch service is currently unavailable. Please try again.');
         }
@@ -386,7 +435,7 @@ class BatchController extends Controller
         }
 
         $payload = $response->json();
-        $message = $this->extractMessage($payload, 'Total pigs fetched successfully');
+        $message = $this->extractMessage($payload, 'Active batch fetched successfully');
 
         return response()->json([
             'success' => true,
